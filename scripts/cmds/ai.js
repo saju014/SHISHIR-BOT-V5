@@ -4,7 +4,7 @@ module.exports = {
     config: {
         name: "ai",
         version: "1.5.0",
-        author: "xalman",
+        author: "xhishir",
         countDown: 2,
         role: 0,
         shortDescription: "Chat with AI (Supports Reply)",
@@ -37,7 +37,7 @@ module.exports = {
         api.setMessageReaction("🔍", messageID, () => {}, true);
 
         try {
-            const res = await axios.post("https://xalman-apis.vercel.app/api/aichat", {
+            const res = await axios.post("https://shishir-apis.vercel.app/api/aichat", {
                 query: query
             });
 
