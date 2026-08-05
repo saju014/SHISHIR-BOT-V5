@@ -4,7 +4,7 @@ module.exports = {
   config: {
     name: "age",
     version: "4.0.",
-    author: "Amit max//xalman",
+    author: "𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓",
     countDown: 5,
     role: 0,
     shortDescription: "Age Checker",
