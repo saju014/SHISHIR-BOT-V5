@@ -3,7 +3,7 @@ module.exports = {
     name: "out",
     aliases: ["out"],
     version: "2.5",
-    author: "xalman",
+    author: "shishir",
     countDown: 5,
     role: 1,
     shortDescription: "Bot will leave group",
@@ -24,7 +24,7 @@ module.exports = {
       id = parseInt(args.join(" "));
     }
 
-    const leaveMessage = `𝐥𝐞𝐟𝐭 𝐟𝐫𝐨𝐦 𝐭𝐡𝐞 𝐠𝐫𝐨𝐮𝐩..!🦆💨`;
+    const leaveMessage = `শিশির বাস বের করে দিলে তো অনেক কষ্ট পাইলাম কিন্তু! যাই হোক ভালো থেকো ভাবির খেয়াল রাইখো আমায় জানি ভুলনা লাভ ইউ বস...... 🥲..!🦆💨`;
 
     return api.sendMessage(
       leaveMessage,
