@@ -2,7 +2,7 @@ module.exports = {
 	config: {
 		name: "mention",
 		version: "1.2",
-		author: "xalman",
+		author: "shishir",
 		role: 0,
 		shortDescription: {
 			en: "Reply when specific user is mentioned"
@@ -14,8 +14,8 @@ module.exports = {
 
 	onChat: async function ({ api, event }) {
 		const bossUIDs = [
-			"61590481514968",
-			"61592084390757"
+			"61592841571046",
+			"61592841571046"
 		];
 
 		if (!event.mentions || typeof event.mentions !== "object")
