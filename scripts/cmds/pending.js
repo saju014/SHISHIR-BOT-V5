@@ -4,7 +4,7 @@ module.exports = {
   config: {
     name: "pending",
     version: "2.3",
-    author: "xalman",
+    author: "shishir",
     countDown: 5,
     role: 2,
     shortDescription: { en: "Manage pending group requests" },
@@ -49,7 +49,7 @@ module.exports = {
 `╭─🚫 ACCESS DENIED 🚫─╮
 │ 🤖 Bot : Refused
 │ 🔗 Prefix : ${prefix}
-│ ⚡ Owner : xalman
+│ ⚡ Owner : 𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓
 │ ⏰ Date/Time : ${dateTime}
 ╰──────────────────╯`,
           targetThreadID
@@ -78,7 +78,7 @@ module.exports = {
 `╭─✨ SYSTEM GOAT ✨─╮
 │ 🤖 Bot : Activated
 │ 🔗 Prefix : ${prefix}
-│ ⚡ Owner : xalman
+│ ⚡ Owner : 𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓
 │ ⏰ Date/Time : ${dateTime}
 ╰─✅ Access Granted─╯`,
         targetThreadID
