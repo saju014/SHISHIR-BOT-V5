@@ -1,69 +1,57 @@
-const moment = require("moment-timezone");
+const fs = require("fs-extra");
+const request = require("request");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "owner",
-    aliases: ["admininfo", "info", "ownerinfo"],
-    version: "3.0",
-    author: "shishir",
-    countDown: 5,
+    version: "1.3.0",
+    author: "亗•shishir✿᭄",
     role: 0,
-    shortDescription: { en: "Show owner information" },
-    category: "owner",
-    guide: { en: "{pn}" }
-  },
-
-  onStart: async function ({ api, event, message }) {
-
-    const ownerName = "𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓";
-    const ownerAge = "17";
-    const fbName = "𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓";
-    const messenger = "https://www.facebook.com/share/1Bv9aqSdfA/";
-    const whatsapp = "017493---26";
-    const telegram = "nai re vai suspend ";
-    const address = "Sirajganj , Rajshahi , Bangladesh";
-    const religion = "Islam";
-    const apiServer = "🥺🖕";
-    const relationship = "Single";
-    const videoLink = "https://i.imgur.com/MlRUUe4.mp4";
-    const timeBD = moment().tz("Asia/Dhaka");
-    
-    const infoMsg = 
-`『 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡 』
-━━━━━━━━━━━━━━━━━━━━━
-
-👤 𝗔𝗕𝗢𝗨𝗧 𝗠𝗘:
-● Name: ${ownerName}
-● Age: ${ownerAge}
-● Relationship: ${relationship}
-● Religion: ${religion}
-● Address: ${address}
-
-📞 𝗖𝗢𝗡𝗧𝗔𝗖𝗧 𝗗𝗘𝗧𝗔𝗜𝗟𝗦:
-● Facebook: ${fbName}
-● Fb Link: ${messenger}
-● WhatsApp: ${whatsapp}
-● Telegram: ${telegram}
-● API Server: ${apiServer}
-
-⏰ 𝗗𝗔𝗧𝗘 & 𝗧𝗜𝗠𝗘 (𝗕𝗗):
-● ${timeBD.format("DD MMMM, YYYY")}
-● ${timeBD.format("hh:mm:ss A")}
-━━━━━━━━━━━━━━━━━━━━━`;
-
-    try {
-      return message.reply({
-        body: infoMsg,
-        attachment: await global.utils.getStreamFromURL(videoLink)
-      });
-    } catch (e) {
-      return message.reply(infoMsg);
+    shortDescription: "Owner information with image",
+    category: "Information",
+    guide: {
+      en: "owner"
     }
   },
 
-  onChat: async function ({ event, message }) {
-    if (event.body?.toLowerCase() === "info") {
-      return this.onStart({ message, event });
-    }
+  onStart: async function ({ api, event }) {
+    const ownerText = 
+`╭─ 👑 Oᴡɴᴇʀ Iɴғᴏ 👑 ─╮
+│ 👤 Nᴀᴍᴇ       : 亗•𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓✿᭄
+│🧸 Nɪᴄᴋ       : Your abbu
+│ 🎂 Aɢᴇ        : 17+
+│ 💘 Rᴇʟᴀᴛɪᴏɴ : Sɪɴɢʟᴇ
+│ 🎓 Pʀᴏғᴇssɪᴏɴ : Sᴛᴜᴅᴇɴᴛ
+│ 📚 Eᴅᴜᴄᴀᴛɪᴏɴ : Iɴᴛᴇʀ 1st Yᴇᴀʀ
+│ 🏡 Lᴏᴄᴀᴛɪᴏɴ : Sirajganj   
+├─ 🔗 Cᴏɴᴛᴀᴄᴛ ─╮
+│ 📘 Facebook  : https://www.facebook.com/share/1RMnWr2g1g/
+│ 💬 Messenger: m.me/61592841571046
+│ 📞 WhatsApp  : wa.me/01749---26
+╰────────────────╯`;
+
+    const cacheDir = path.join(__dirname, "cache");
+    const imgPath = path.join(cacheDir, "owner.jpg");
+
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
+    const imgLink = "https://i.imgur.com/ntzM4Q2.jpeg";
+
+    const send = () => {
+      api.sendMessage(
+        {
+          body: ownerText,
+          attachment: fs.createReadStream(imgPath)
+        },
+        event.threadID,
+        () => fs.unlinkSync(imgPath),
+        event.messageID
+      );
+    };
+
+    request(encodeURI(imgLink))
+      .pipe(fs.createWriteStream(imgPath))
+      .on("close", send);
   }
 };
