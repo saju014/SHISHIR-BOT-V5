@@ -2,7 +2,7 @@ module.exports.config = {
     name: "tormarechudi",
     version: "4.0",
     role: 2,
-    author: "xalman",
+    author: "shishir",
     description: "150 Unique Banglish tag list (3.5s gap)",
     category: "nsfw",
     guide: "{pn} @mention ba reply",
@@ -16,7 +16,7 @@ module.exports.onStart = async function({ api, event, args }) {
     if (type === "message_reply") targetID = messageReply.senderID;
     else if (Object.keys(mentions).length > 0) targetID = Object.keys(mentions)[0];
 
-    if (!targetID) return api.sendMessage("Kire vodai, jare gali dibi tare mention de!", threadID, messageID);
+    if (!targetID) return api.sendMessage("shishir bos khali kow! kon khankir pola, jare gali dibi tare mention dew!", threadID, messageID);
 
     const userInfo = await api.getUserInfo(targetID);
     name = userInfo[targetID].name;
