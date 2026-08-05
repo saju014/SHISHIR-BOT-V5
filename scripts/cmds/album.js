@@ -21,7 +21,7 @@ module.exports = {
     name: "album",
     aliases: ["gallery", "alb"],
     version: "10.1",
-    author: "xalman",
+    author: "shishir",
     role: 0,
     category: "ANIME & MEDIA",
     shortDescription: "get category based video from API",
