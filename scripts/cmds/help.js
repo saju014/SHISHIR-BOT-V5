@@ -1,99 +1,166 @@
 const fs = require("fs-extra");
-const axios = require("axios");
 const path = require("path");
-const { getPrefix } = global.utils;
-const { commands, aliases } = global.GoatBot;
-const doNotDelete = "〲 𝗠𝗔𝗬𝗕𝗘 𝗡𝗫 〲";
+const https = require("https");
+
+const smallCapsMap = {
+  a:'ᴀ', b:'ʙ', c:'ᴄ', d:'ᴅ', e:'ᴇ', f:'ꜰ',
+  g:'ɢ', h:'ʜ', i:'ɪ', j:'ᴊ', k:'ᴋ', l:'ʟ',
+  m:'ᴍ', n:'ɴ', o:'ᴏ', p:'ᴘ', q:'ǫ', r:'ʀ',
+  s:'ꜱ', t:'ᴛ', u:'ᴜ', v:'ᴠ', w:'ᴡ', x:'x',
+  y:'ʏ', z:'ᴢ'
+};
+
+const cmdFontMap = {
+  ...smallCapsMap,
+  '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴',
+  '5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'
+};
+
+const toSmallCaps = t =>
+  t.toLowerCase().split("").map(c => smallCapsMap[c] || c).join("");
+
+const toCmdFont = t =>
+  t.toLowerCase().split("").map(c => cmdFontMap[c] || c).join("");
 
 module.exports = {
- config: {
- name: "help",
- version: "1.25",
- author: "xalman",
- countDown: 5,
- role: 0,
- shortDescription: { en: "View command usage" },
- longDescription: { en: "View command usage" },
- category: "info",
- guide: { en: "{pn} [page | command name]" },
- priority: 1
- },
+  config: {
+    name: "help",
+    aliases: ["menu"],
+    version: "6.0",
+    author: "𝐒hishir",
+    shortDescription: "Show all available commands",
+    longDescription: "Displays a categorized command list with a rotating video (different every time).",
+    category: "system",
+    guide: "{pn}help [command name]"
+  },
 
- langs: {
- en: {
- help2: "╭━━━ ◆ 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗟𝗜𝗦𝗧 ◆ ━━━╮\n\n%1\n\n╰━━━━━━━━━━━━━━━━━━━━╯\n📖 𝗣𝗮𝗴𝗲: [ %2 / %3 ]\n📊 𝗧𝗼𝘁𝗮ｌ: %4 𝗖𝗺𝗱𝘀\n💡 𝗨𝘀𝗲: %5𝐡𝐞𝐥𝐩 <𝐧𝐮𝐦>\n━━━━━━━━━━━━━━━━━━━━\n👤 %6",
- 
- help: "┏━━━━━━━ ⚡ 𝗠𝗘𝗡𝗨 ━━━━━━━┓\n%1\n┗━━━━━━━━━━━━━━━━━━━━━━┛\n◈ 𝗧𝗼𝘁𝗮ｌ: %2 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀\n◈ 𝗣𝗿𝗲𝗳𝗶𝘅: [ %3 ]\n✨ %4",
+  onStart: async function ({ message, args, prefix }) {
+    const allCommands = global.GoatBot.commands;
+    const categories = {};
 
- commandNotFound: "⚠️ 𝗖𝗼𝗺𝗺𝗮𝗻𝗱 \"%1\" 𝗻𝗼𝘁 𝗳𝗼𝘂𝗻𝗱!",
+    const cleanCategoryName = (text) => {
+      if (!text) return "OTHERS";
+      return text
+        .normalize("NFKD")
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+    };
 
- getInfoCommand: "╭─────── ✧ 𝗜𝗡𝗙𝗢 ✧ ───────⦿\n│ 🏷️ 𝗡𝗮𝗺𝗲: %1\n│ 📝 𝗗𝗲𝘀𝗰: %2\n│ 🖇️ 𝗔𝗹𝗶𝗮𝘀: %3\n│ 🧬 𝗩𝗲𝗿𝘀𝗶𝗼𝗻: %4\n│ 🛡️ 𝗣𝗲𝗿𝗺𝗶𝘀: %5\n│ ⏳ 𝗖𝗼𝗼𝗹𝗱𝗼𝘄𝗻: %6𝘀\n│ 👤 𝗔𝘂𝘁𝗵𝗼𝗿: %7\n╰────────────────────⦿\n╭─────── 📖 𝗨𝗦𝗔𝗚𝗘 ──────⦿\n│ %8\n╰────────────────────⦿",
- pageNotFound: "❌ Page %1 is out of range!"
- }
- },
 
- onStart: async function ({ message, args, event, threadsData, getLang, role }) {
- const langCode = await threadsData.get(event.threadID, "data.lang") || global.GoatBot.config.language;
- const { threadID } = event;
- const threadData = await threadsData.get(threadID);
- const prefix = getPrefix(threadID);
- 
- const commandName = (args[0] || "").toLowerCase();
- const command = commands.get(commandName) || commands.get(aliases.get(commandName));
+    if (!global.GoatBot.cacheHelp) {
+      const cachedCategories = {};
+      for (const [name, cmd] of allCommands) {
+        if (!cmd?.config || name === "help") continue;
+        const cat = cleanCategoryName(cmd.config.category);
+        if (!cachedCategories[cat]) cachedCategories[cat] = [];
+        cachedCategories[cat].push(name);
+      }
+      global.GoatBot.cacheHelp = cachedCategories;
+    }
+    const categoriesList = global.GoatBot.cacheHelp;
 
- if (!command && (!args[0] || !isNaN(args[0]))) {
- const arrayInfo = [];
- let msg = "";
- 
- if (!isNaN(args[0]) || (threadData.settings && threadData.settings.sortHelp === "name")) {
- const page = parseInt(args[0]) || 1;
- const numberOfOnePage = 20;
- 
- for (const [name, value] of commands) {
- if (value.config.role > role) continue;
- arrayInfo.push({ data: name, priority: value.priority || 0 });
- }
- 
- arrayInfo.sort((a, b) => b.priority - a.priority || a.data.localeCompare(b.data));
- const { allPage, totalPage } = global.utils.splitPage(arrayInfo, numberOfOnePage);
- if (page < 1 || page > totalPage) return message.reply(getLang("pageNotFound", page));
+    const videoURLs = [
+      "https://i.imgur.com/IudwgaP.mp4",
+      "https://i.imgur.com/AMv8IqG.mp4",
+      "https://i.imgur.com/xhFp4Rc.mp4",
+      "https://i.imgur.com/EXar1VY.mp4",
+      "https://i.imgur.com/vWigmIF.mp4",
+      "https://i.imgur.com/V6Au0p4.mp4"
+    ];
 
- msg = allPage[page - 1].reduce((text, item, index) => text += ` ❯ ${(page-1)*numberOfOnePage + index + 1}. ${item.data}\n`, "");
- return message.reply(getLang("help2", msg, page, totalPage, arrayInfo.length, prefix, doNotDelete));
- } 
- else {
- const categories = {};
- for (const [, value] of commands) {
- if (value.config.role > role) continue;
- const cat = value.config.category?.toUpperCase() || "OTHERS";
- if (!categories[cat]) categories[cat] = [];
- categories[cat].push(value.config.name);
- }
+    const cacheDir = path.join(__dirname, "cache");
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
- Object.keys(categories).sort().forEach(cat => {
- msg += `\n┌──『 ${cat} 』\n└➤ ${categories[cat].sort().map(n => n).join(", ")}\n`;
- });
+    const indexFile = path.join(cacheDir, "help_video_index.json");
+    let index = 0;
+    if (fs.existsSync(indexFile)) {
+      try {
+        index = (JSON.parse(fs.readFileSync(indexFile)).index + 1) % videoURLs.length;
+      } catch {}
+    }
+    fs.writeFileSync(indexFile, JSON.stringify({ index }));
 
- return message.reply(getLang("help", msg, commands.size, prefix, doNotDelete));
- }
- }
+    const videoPath = path.join(cacheDir, `help_video_${index}.mp4`);
+    if (!fs.existsSync(videoPath)) {
+      await downloadFile(videoURLs[index], videoPath);
+    }
 
- if (!command) return message.reply(getLang("commandNotFound", args[0]));
+    if (args[0]) {
+      const query = args[0].toLowerCase();
+      const cmd = allCommands.get(query) || [...allCommands.values()].find(c => (c.config?.aliases || []).map(a => a.toLowerCase()).includes(query));
 
- const config = command.config;
- let guide = config.guide?.[langCode] || config.guide?.en || "";
- if (typeof guide === "object") guide = guide.body;
- const usage = guide.replace(/\{pn\}/g, prefix + config.name).replace(/\{p\}/g, prefix);
- 
- return message.reply(getLang("getInfoCommand", 
- config.name.toUpperCase(), 
- config.shortDescription?.[langCode] || config.shortDescription?.en || "No Description", 
- config.aliases?.join(", ") || "None", 
- config.version || "1.0.0", 
- config.role == 0 ? "All Users" : config.role == 1 ? "Admins" : "Bot Owner", 
- config.countDown || 1, 
- config.author || "Unknown", 
- usage.split("\n").map(line => ` » ${line}`).join("\n")
- ));
- }
+      if (!cmd || !cmd.config) return message.reply(`❌ Command "${query}" not found.`);
+
+      const { name, version, author, guide, category, longDescription, shortDescription, aliases } = cmd.config;
+      const desc = longDescription?.en || longDescription || shortDescription?.en || shortDescription || "No description";
+      const usage = (guide?.en || guide || `{pn}${name}`).replace(/{pn}/g, prefix).replace(/{name}/g, name);
+
+      const detailMsg =
+        `╭┈─────┈─ ─┈────┈╮\n` +
+        `  🌸 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗜𝗡𝗙𝗢 🌸\n` +
+        `╰┈─────┈─ ─┈────┈╯\n\n` +
+        ` 🪷 𝐍𝐚𝐦𝐞: ${toSmallCaps(name)}\n` +
+        ` 🪷 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${toSmallCaps(category || "General")}\n` +
+        ` 🪷 𝐀𝐥𝐢𝐚𝐬𝐞𝐬: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
+        ` 🪷 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${version || "1.0"}\n` +
+        ` 🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${author || "S1FU"}\n\n` +
+        ` ┌──────ʚ🍄ɞ──────┐\n` +
+        `  📖 𝐃𝐞𝐬𝐜: ${desc}\n\n` +
+        `  💡 𝐔𝐬𝐚𝐠𝐞: ${usage}\n` +
+        ` └──────ʚ🍄ɞ──────┘\n\n` +
+        ` 🌸𝐒𝐭𝐚𝐲 𝐇𝐚𝐩𝐩𝐲&𝐁𝐞𝐚𝐮𝐭𝐢𝐟𝐮𝐥🌸\n` +
+        `╰┈───┈──────┈───┈╯`;
+
+      return message.reply({ body: detailMsg, attachment: fs.createReadStream(videoPath) });
+    }
+
+
+    let msg = `╭┈─────┈──┈─────┈╮\n` +
+              `       🌸𝗦𝗛𝗜𝗦𝗛𝗜𝗥  𝐁𝐎𝐓 𝐌𝐄𝐍𝐔 🌸\n` +
+              `╰┈─────┈──┈─────┈╯\n\n`;
+
+    const sortedCategories = Object.keys(categoriesList).sort();
+
+    for (const cat of sortedCategories) {
+      msg += `╭┈─┈━[🌸 ${toSmallCaps(cat)} ]\n`;
+      const commands = categoriesList[cat].sort();
+      for (let i = 0; i < commands.length; i += 2) {
+        const a = toCmdFont(commands[i]);
+        const b = commands[i + 1] ? toCmdFont(commands[i + 1]) : null;
+        msg += b ? `┋⌬ ${a.padEnd(12)} ⌬ ${b}\n` : `┋⌬ ${a}\n`;
+      }
+      msg += `┕┈───┈──┈────┈𒐬\n\n`;
+    }
+
+    msg += `╭┈───────┈┈ ೄྀ࿐┐\n` +
+           ` 🍄 𝐓𝐨𝐭𝐚𝐥: ${allCommands.size - 1}\n` +
+           ` 🎀 𝐏𝐫𝐞𝐟𝐢𝐱: ${prefix}\n` +
+           ` 🌸👑𝙊𝙬𝙣𝙚𝙧:𝘼𝙝𝙢𝙚𝘿’𝙨 𝙎𝙝𝙞'𝙨𝙝𝙞𝙧 
+           🅆🄰🄿🄿:017493---26.🌸\n` +
+           `╰┈──────┈──────┈─┘`;
+
+    return message.reply({
+      body: msg,
+      attachment: fs.createReadStream(videoPath)
+    });
+  }
 };
+
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dest);
+    https.get(url, res => {
+      if (res.statusCode !== 200) {
+        fs.unlink(dest, () => {});
+        return reject(new Error(`Failed to download '${url}' (${res.statusCode})`));
+      }
+      res.pipe(file);
+      file.on("finish", () => file.close(resolve));
+    }).on("error", err => {
+      fs.unlink(dest, () => {});
+      reject(err);
+    });
+  });
+}
