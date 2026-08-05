@@ -10,7 +10,7 @@ module.exports = {
     name: "uptime",
     version: "3.5",
     role: 0,
-    author: "xalman",
+    author: "shishir",
     description: "Premium Uptime for Goat Bot V2 with Image Generation",
     category: "system",
     guide: "{pn}",
@@ -324,7 +324,7 @@ async function generateUptimeImage(data) {
   ctx.fillRect(0, height - 40, width, 40);
   ctx.font = '13px "Arial"';
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.fillText('© Create by xalman | All Systems Operational', 50, height - 15);
+  ctx.fillText('© Create by shishir | All Systems Operational', 50, height - 15);
   ctx.fillText(`Generated: ${moment().format('HH:mm:ss')}`, width - 200, height - 15);
   
   ctx.globalAlpha = 0.05;
