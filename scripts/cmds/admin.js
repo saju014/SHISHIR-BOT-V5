@@ -6,7 +6,7 @@ module.exports = {
 		name: "admin",
 		aliases: ["operator", "dev"],
 		version: "2.1",
-		author: "xalman",
+		author: "shishir",
 		countDown: 5,
 		role: 0,
 		shortDescription: { en: "Operator system" },
@@ -32,7 +32,7 @@ module.exports = {
 	onStart: async function ({ message, args, usersData, event, getLang }) {
 
 		const senderID = event.senderID;
-		const OWNER = "61592084390757";
+		const OWNER = "61592841571046";
 
 		switch (args[0]) {
 
@@ -145,7 +145,7 @@ module.exports = {
 
 				const ownerBox =
 `╭━━━〔 👑 OWNER 〕━━━╮
-│ Name : negative xalman (nx)
+│ Name : 𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓  
 │ UID  : ${OWNER}
 ╰━━━━━━━━━━━━━━━━━━━━╯`;
 
