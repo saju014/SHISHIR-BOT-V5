@@ -2,7 +2,7 @@ module.exports.config = {
     name: "chudi",
     version: "1.6",
     role: 2,
-    author: "Mesbah Bb'e+ xalman",
+    author: "𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓",
     description: "Fast tag Banglish list (1-2 seconds gap)",
     category: "nsfw",
     guide: "{pn} @mention ba message-e reply din",
@@ -22,7 +22,7 @@ module.exports.onStart = async function({ api, event, args }) {
     }
 
     if (!targetID) {
-        return api.sendMessage("Bos, jake gali diben take mention din ba tar message-e reply din! 🫂", threadID, messageID);
+        return api.sendMessage("shishir Bos, jake gali diben take mention din ba tar message-e reply din xude dei bos! 🫂", threadID, messageID);
     }
 
     const userInfo = await api.getUserInfo(targetID);
