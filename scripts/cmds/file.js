@@ -5,7 +5,7 @@ module.exports = {
 	config: {
 		name: "file",
 		version: "3.0",
-		author: "xalmam",
+		author: "shishir",
 		countDown: 2,
 		role: 0,
 		shortDescription: "Send bot script",
@@ -16,7 +16,7 @@ module.exports = {
 
 	onStart: async function ({ message, args, api, event }) {
 
-		const permission = ["61592084390757"];
+		const permission = ["61592841571046"];
 		if (!permission.includes(event.senderID)) {
 			return api.sendMessage("Access denied.", event.threadID, event.messageID);
 		}
