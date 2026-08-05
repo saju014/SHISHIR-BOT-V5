@@ -5,7 +5,7 @@ module.exports = {
     name: "font",
     aliases: ["fontstyle"],
     version: "4.3",
-    author: "xalman",
+    author: "shishir",
     countDown: 5,
     role: 0,
     shortDescription: "Generate stylish fonts & see list",
@@ -15,12 +15,12 @@ module.exports = {
 
   onStart: async function ({ api, event, args }) {
     const { threadID, messageID } = event;
-    const API_URL = "https://xalman-apis.vercel.app/api/font";
+    const API_URL = "https://shishir-apis.vercel.app/api/font";
 
     if (args[0] && args[0].toLowerCase() === "list") {
       api.setMessageReaction("📜", messageID, () => {}, true);
       try {
-        const res = await axios.get(`${API_URL}?text=xalman&style=List`);
+        const res = await axios.get(`${API_URL}?text=shishir&style=List`);
         const previews = res.data.previews;
         
         let listMsg = "❖ 𝖥𝖮𝖭𝖳 𝖲𝖳𝖸𝖫𝖨𝖲𝖳 𝖯𝖱𝖤𝖵𝖨𝖤𝖶 ❖\n━━━━━━━━━━━━━━━━━━\n";
@@ -41,7 +41,7 @@ module.exports = {
     const text = args.join(" ");
 
     if (!text || isNaN(styleID)) {
-      return api.sendMessage("╭─❍\n│ 𝖴𝗌𝖺𝗀𝖾: /font [text] [style_id]\n│ 𝖤𝗑: /font xalman 15\n╰───────────⟡", threadID, messageID);
+      return api.sendMessage("╭─❍\n│ 𝖴𝗌𝖺𝗀𝖾: /font [text] [style_id]\n│ 𝖤𝗑: /font shishir 15\n╰───────────⟡", threadID, messageID);
     }
 
     try {
