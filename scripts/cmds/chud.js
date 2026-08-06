@@ -1,115 +1,64 @@
-const fs = require("fs-extra");
-const Canvas = require("canvas");
-const path = require("path");
-
-const ACCESS_TOKEN =
-  "350685531728|62f8ce9f74b12f84c123cc23437a4a32";
-
-const backgrounds = [
-  "https://i.postimg.cc/90M4j2yZ/20251102-155328.png"
-];
-
 module.exports = {
   config: {
-    name: "poke",
+    name: "war",
     aliases: ["chud"],
-    version: "5.0",
-    author: "shishir",
-    role: 0,
-    countDown: 10,
-    shortDescription: "poke image",
-    category: "FUN & SOCIAL"
+    version: "1.0",
+    author: "nexo_here",
+    role: 2,
+    category: "admin",
+    guide: {
+      vi: "Not Available",
+      en: "chud @(mention)"
+    } 
   },
 
-  onStart: async function ({ api, event, message, usersData }) {
-
-    api.setMessageReaction("🕜", event.messageID, () => {}, true);
-
-    let targetID = null;
-
-    if (event.messageReply && event.messageReply.senderID) {
-      targetID = event.messageReply.senderID;
-    }
-
-    else if (event.mentions && Object.keys(event.mentions).length > 0) {
-      targetID = Object.keys(event.mentions)[0];
-    }
-
-    else {
-      const match = event.body?.match(/\b\d{8,20}\b/);
-      if (match) targetID = match[0];
-    }
-
-    if (!targetID) {
-      return message.reply(
-        "❌ Use any:\n• poke @mention\n• reply + poke\n• poke uid"
-      );
-    }
-
-    const senderID = event.senderID;
-
-    try {
-
-      const senderName =
-        (await usersData.getName(senderID).catch(() => "You"));
-      const targetName =
-        (await usersData.getName(targetID).catch(() => "Friend"));
-
-      const senderAvatar = `https://graph.facebook.com/${senderID}/picture?width=512&height=512&access_token=${ACCESS_TOKEN}`;
-      const targetAvatar = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=${ACCESS_TOKEN}`;
-
-      const bg =
-        backgrounds[Math.floor(Math.random() * backgrounds.length)];
-
-      const [sImg, tImg, bgImg] = await Promise.all([
-        Canvas.loadImage(senderAvatar),
-        Canvas.loadImage(targetAvatar),
-        Canvas.loadImage(bg)
-      ]);
-
-      const canvas = Canvas.createCanvas(873, 1280);
-      const ctx = canvas.getContext("2d");
-
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-
-      const size = Math.floor(canvas.width * 0.28);
-      const y = 80;
-
-      const drawAvatar = (img, x, color) => {
-        ctx.save();
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 25;
-        ctx.beginPath();
-        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(img, x, y, size, size);
-        ctx.restore();
-      };
-
-      drawAvatar(sImg, 80, "#ff4d6d");
-      drawAvatar(tImg, canvas.width - size - 80, "#4d9cff");
-
-      const imgPath = path.join(
-        __dirname,
-        "tmp",
-        `${senderID}_${targetID}.png`
-      );
-      await fs.ensureDir(path.dirname(imgPath));
-      fs.writeFileSync(imgPath, canvas.toBuffer());
-
-      message.reply(
-        {
-          body: `${senderName} poked ${targetName} 🫦`,
-          attachment: fs.createReadStream(imgPath)
-        },
-        () => {
-          fs.unlinkSync(imgPath);
-          api.setMessageReaction("✅", event.messageID, () => {}, true);
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      message.reply("❌ Error occurred.");
-    }
+  onStart: async function ({ api, event, userData, args }) {
+      var mention = Object.keys(event.mentions)[0];
+    if(!mention) return api.sendMessage("Need to tag 1 friend whome you want to scold with bad words", event.threadID);
+ let name =  event.mentions[mention];
+    var arraytag = []; 
+        arraytag.push({id: mention, tag: name});
+    var a = function (a) { api.sendMessage(a, event.threadID); }
+setTimeout(() => {a({body: "কিরে মাদারচোত আকাশ এর চুদন খাওয়ায় জন্য রেডি তো?" + "লে চুদা খা মাঙ্গের বেটা 😂😂" + name, mentions: arraytag})}, 3000);
+setTimeout(() => {a({body: "মাঘি চুদা শরের বাচ্চা কার লগে পঙ্গা নিতে আসছিস 🤬🤬🤬" + " " + name, mentions: arraytag})}, 5000);
+setTimeout(() => {a({body: " চুদে গুহা ফাঁক করে দিব খানকীর পোলা 🤤" + " " + name, mentions: arraytag})}, 7000);
+setTimeout(() => {a({body: " মাদারচোত বোকাচোদা খানকীর পোলা " + " " + name, mentions: arraytag})}, 9000);
+setTimeout(() => {a({body: " বেসসা মাঘী চোদা কুত্তা চোদা" + " " + name, mentions: arraytag})}, 12000);
+setTimeout(() => {a({body: " ছাগল চুদা গরু চুদা মাঙ্গের বেটা লোকজন দেখে লাগতে আসিস কুত্তার বাচ্চা 🤬" + " " + name, mentions: arraytag})}, 14000);
+setTimeout(() => {a({body: " তোর আব্বুকে ভুলে গেলি মাদারচোত 😂" + " " + name, mentions: arraytag})}, 16000);
+setTimeout(() => {a({body: " তোকে কনডম ছাড়া চুদী মঙ্গের বেটা 🖕🏿" + " " + name, mentions: arraytag})}, 18000);
+setTimeout(() => {a({body: " আমার ধন চুষ তাইলে থামবো 😂" + " " + name, mentions: arraytag})}, 20000);
+setTimeout(() => {a({body: " তোরে কুত্তা দিয়ে চোদাই 😍" + " " + name, mentions: arraytag})}, 22000);
+setTimeout(() => {a({body: " মাঘীর মাং চাটিস বোকাচোদার বাচ্চা তোকে কন্ডম ছাড়া উল্টা করে চুদি 🤬" + " " + name, mentions: arraytag})}, 2400);
+setTimeout(() => {a({body: " এখনো সময় আছে মাফ চা 🤣🤣" + " " + name, mentions: arraytag})}, 26000);
+setTimeout(() => {a({body: " তোর নানি কেমন আছে 😍??" + " " + name, mentions: arraytag})}, 28000);
+setTimeout(() => {a({body: " তোকে চুদী 🥰" + " " + name, mentions: arraytag})}, 30000);
+setTimeout(() => {a({body: " মাদারচোত 🥰" + " " + name, mentions: arraytag})}, 32000);
+setTimeout(() => {a({body: " আব্বা কে ভুলিস না 🤬" + " " + name, mentions: arraytag})}, 65000);
+setTimeout(() => {a({body: " আজকের চুদন আজীবন মনে রাখিস বোকাচোদা 🤣🤣🤣" + " " + name, mentions: arraytag})}, 34000);
+setTimeout(() => {a({body: "মাঘা 🥰" + " " + name, mentions: arraytag})}, 36000);
+setTimeout(() => {a({body: " আয় আমার হোল টা চুষে দে 🥵🥵" + " " + name, mentions: arraytag})}, 38000);
+setTimeout(() => {a({body: " বাপ কে ভুলিস না বোকাচোদার বাচ্চা 🤬🤬🤬🤬🤬" + " " + name, mentions: arraytag})}, 40000);
+setTimeout(() => {a({body: " হোল কাটে নিবো 🤬🤬🤬🤬🤬🤬" + " " + name, mentions: arraytag})}, 44000);
+setTimeout(() => {a({body: " তোমার গুষ্টি চুদী ব্রো 😞🖕🏿" + " " + name, mentions: arraytag})}, 460000);
+setTimeout(() => {a({body: "🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿" + " " + name, mentions: arraytag})}, 48000);
+setTimeout(() => {a({body: " মাঘীর ছেলে তোর মাকে চুদী 🖕🏽🖕🏽🖕🏽 " + " " + name, mentions: arraytag})} , 50000);
+setTimeout(() => {a({body: " আজকে তোকে প্যান্ট না খুলেই চুদবো 🤬 তোর মাকে একটু আগেই চুঁদে আসলাম 😂" + " " + name, mentions: arraytag})} , 52000);
+setTimeout(() => {a({body: "বোকাচোদার বাচ্চা 😂" + " " + name, mentions: arraytag})} , 56000);
+setTimeout(() => {a({body: " মাদারচোত বোকাচোদা খানকীর ছেলে 🤬" + " " + name, mentions: arraytag})} , 58000);
+setTimeout(() => {a({body: " প্যান্ট ভিজে নাই 🤣🤣🤣🤣🤣🤣🤣???" + " " + name, mentions: arraytag})} , 60000);
+setTimeout(() => {a({body: " আরো চুদন খাইতে চাচ্ছিস ???? " + " " + name, mentions: arraytag})} , 62000);
+setTimeout(() => {a({body: " আয় মাদারচোত আমার ধণ টা চুষে যা 🤬"+ " " + name, mentions: arraytag})} , 64000);
+setTimeout(() => {a({body: " তোকে ডগি স্টাইল e চুদী 😋😋" + " " + name, mentions: arraytag})} , 66000);
+setTimeout(() => {a({body: " তোর আব্বাকে ভুললে আরেকবার এমন চুদন চুদবো মোর যাবি মঙ্গের বেটা 😂😂😂" + " " + name, mentions: arraytag})} , 68000);
+setTimeout(() => {a({body: " আজকের চুদন আজীবন মনে রাখবি 🤣🤣🤣" + " " + name, mentions: arraytag})} , 70000);
+setTimeout(() => {a({body: " আয় আমার ধোন টা চুষে যা মঙ্গের পুত 🤬🤬🤬🤬" + " " + name, mentions: arraytag})} , 72000);
+setTimeout(() => {a({body: " তোরে মুততে মুততে চুদী 🤣🤣" + " " + name, mentions: arraytag})} , 74000);
+setTimeout(() => {a({body: " চুঁদে পাউরুটি বানায় তোর হোগায় ভরে দিব মাঙ্গের বেতা চিনিস আমারে???" + " " + name, mentions: arraytag})} , 76000);
+setTimeout(() => {a({body: " খানকীর পোলা তোর বাপকে ভুলে গেলি?? জন্ম দেওয়া ভুল হইলো 🤬🤬🤬" + " " + name, mentions: arraytag})} , 78000);
+setTimeout(() => {a({body: "বোকাচোদার বাচ্চা 😍" + " " + name, mentions: arraytag})} , 80000);
+setTimeout(() => {a({body: " তোকে চুদী 😍😍😍" + " " + name, mentions: arraytag})} , 82000);
+setTimeout(() => {a({body: " হোল কাটে নিবো মঙ্গের বেটা কার লগে লাগতে আসছিস 🤬" + " " + name, mentions: arraytag})} , 84000);
+setTimeout(() => {a({body: "নেওয়াজ এর চুদন কেমন লাগলো বাচ্চা 🤣🤣🤣🤣??" + " " + name, mentions: arraytag})} , 84000);
   }
 };
