@@ -33,7 +33,7 @@ module.exports = {
                 "┣ ɢʟᴏʙᴀʟ ᴘʀᴇꜰɪx : %2\n" +
                 "┣ ᴛʜɪꜱ ᴄʜᴀᴛ     : %3\n" +
                 "┣ ᴄᴍᴅ ᴍᴇɴᴜ      : ʜᴇʟᴘ\n" +
-                "┣ ᴅᴇᴠ           : 𝘼𝙝𝙢𝙚𝘿’𝙨 𝙎𝙝𝙞'𝙨𝙝𝙞𝙧 ☠️\n\n" +
+                "┣ ᴅᴇᴠ           : 𝐒𝐇𝐈𝐒𝐇𝐈𝐑  ☠️\n\n" +
                 "〔 ɪ'ᴍ %4 ᴀᴛ ʏᴏᴜʀ ꜱᴇʀᴠɪᴄᴇ 🌊 〕",
         },
     },
@@ -97,7 +97,7 @@ module.exports = {
 
         const mediaURLs = [
             "https://i.imgur.com/MlRUUe4.mp4",
-            "https://i.imgur.com/LIwBYoP.mp4",
+            "https://i.imgur.com/af0Czrz.mp4",
         ];
 
         const cacheDir  = path.join(__dirname, "cache");
