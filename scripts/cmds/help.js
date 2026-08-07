@@ -118,7 +118,7 @@ module.exports = {
 
 
     let msg = `╭┈─────┈──┈─────┈╮\n` +
-              `       🌸𝗦𝗛𝗜𝗦𝗛𝗜𝗥  𝐁𝐎𝐓 𝐌𝐄𝐍𝐔 🌸\n` +
+              `       🌸𝙎𝙃𝙄𝙎𝙃𝙄𝙍 𝐁𝐎𝐓 𝐌𝐄𝐍𝐔 🌸\n` +
               `╰┈─────┈──┈─────┈╯\n\n`;
 
     const sortedCategories = Object.keys(categoriesList).sort();
