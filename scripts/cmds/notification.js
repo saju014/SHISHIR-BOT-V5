@@ -5,78 +5,111 @@ module.exports = {
   config: {
     name: "notification",
     aliases: ["notify", "noti"],
-    version: "3.0",
+    version: "2.3",
     author: "shishir",
-    countDown: 100,
+    countDown: 5,
     role: 2,
-    shortDescription: { en: "Premium notification sender with progress tracking" },
-    longDescription: { en: "Send text/media notifications to all groups with real-time progress and anti-ban delay." },
+    shortDescription: {
+      en: "Send stylish notification with media to all groups"
+    },
+    longDescription: {
+      en: "Send notification (text, photo, video, audio, etc.) from admin to all groups with aesthetic style"
+    },
     category: "owner",
     guide: { en: "{pn} <message or reply to media>" },
-    envConfig: { delayPerGroup: 600 }
+    envConfig: { delayPerGroup: 300 }
   },
 
-  onStart: async function ({ message, api, event, args, commandName, envCommands, threadsData, usersData }) {
+  langs: {
+    en: {
+      missingMessage: "Please enter a message or reply to a media file to send.",
+      sendingNotification: "📢 Sending notification to %1 groups...",
+      sentNotification: "✅ Successfully sent notification to %1 groups.",
+      errorSendingNotification: "⚠️ Error while sending to %1 groups:\n%2"
+    }
+  },
+
+  onStart: async function ({ message, api, event, args, commandName, envCommands, threadsData, getLang, usersData, config }) {
     const { delayPerGroup } = envCommands[commandName];
-    const { senderID, threadID } = event;
-    
-    const senderName = await usersData.getName(senderID) || "Admin";
+    const senderID = event.senderID;
+    const senderName = await usersData.getName(senderID) || "Unknown User";
+
     const now = moment().tz("Asia/Dhaka");
     const timeString = now.format("hh:mm A");
     const dateString = now.format("DD/MM/YYYY");
 
+    // Handle message text
     const msgText = args.join(" ") || "";
+
+    // Collect attachments from message or reply
     const attachments = [
       ...(event.attachments || []),
       ...(event.messageReply?.attachments || [])
     ].filter(item => ["photo", "animated_image", "video", "audio", "sticker"].includes(item.type));
 
     if (!msgText && attachments.length === 0)
-      return message.reply("⚠️ 𝗣𝗹𝗲𝗮𝘀𝗲 𝗽𝗿𝗼𝘃𝗶𝗱𝗲 𝗮 𝗺𝗲𝘀𝘀𝗮𝗴𝗲 𝗼𝗿 𝗮𝘁𝘁𝗮𝗰𝗵 𝗺𝗲𝗱𝗶𝗮.");
+      return message.reply(getLang("missingMessage"));
 
     let streamAttachments = [];
     if (attachments.length > 0) {
       try {
         streamAttachments = await getStreamsFromAttachment(attachments);
       } catch (err) {
-        return message.reply("❌ 𝗠𝗲𝗱𝗶𝗮 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗙𝗮𝗶𝗹𝗲𝗱: Check if the file is too large.");
+        console.error("Attachment processing error:", err);
       }
     }
 
-    const owner = "𝑨𝒉𝒎𝒆𝑫’𝒔 𝑺𝒉𝒊'𝒔𝒉𝒊𝒓  (ss)";
+    
+    const owner = "×𝙎𝙃𝙄𝙎𝙃𝙄𝙍 ☆"; 
+    const fb = "𝙎𝙃𝙄𝙎𝙃𝙄𝙍  Bb'z";
+
+    
     const formSend = {
-      body: `╭━━━〔 𝗡𝗢𝗧𝗜𝗙𝗜𝗖𝗔𝗧𝗜𝗢𝗡 〕━━━╮\n┃ 𝗢𝗪𝗡𝗘𝗥: ${owner}\n┃ 𝗔𝗗𝗠𝗜𝗡: ${senderName}\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🕒 𝗧𝗶𝗺𝗲: ${timeString} | ${dateString}\n\n📝 𝗠𝗲𝘀𝘀𝗮𝗴𝗲:\n───────────────────\n${msgText || "(Media Attachment)"}\n───────────────────\n\n📢 `,
+      body:
+`╭━━━〔 𝗡𝗢𝗧𝗜𝗙𝗜𝗖𝗔𝗧𝗜𝗢𝗡  〕━━━╮
+│ OWNER: ${owner}
+│MESSENGER: ${fb}
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+
+🕒 Time: ${timeString} - ${dateString}
+
+─────────────────────────
+
+${msgText || "(media only)"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
       attachment: streamAttachments
     };
 
+    // Get all active threads
     const allThreads = (await threadsData.getAll()).filter(
-      t => t.isGroup && t.members.some(m => m.userID == api.getCurrentUserID() && m.inGroup)
+      t => t.isGroup && t.members.find(m => m.userID == api.getCurrentUserID())?.inGroup
     );
 
-    const total = allThreads.length;
-    let sent = 0, failed = 0;
+    message.reply(getLang("sendingNotification", allThreads.length));
 
-    const statusMsg = await message.reply(`🚀 𝗜𝗻𝗶𝘁𝗶𝗮𝘁𝗶𝗻𝗴 𝗡𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻...\n📊 𝗧𝗮𝗿𝗴𝗲𝘁: ${total} Groups.`);
+    let sent = 0;
+    const failed = [];
 
     for (const thread of allThreads) {
       try {
         await api.sendMessage(formSend, thread.threadID);
         sent++;
       } catch (e) {
-        failed++;
-        console.error(`Error in ${thread.threadID}:`, e);
+        failed.push({ id: thread.threadID, err: e.message });
       }
-
-      if ((sent + failed) % 5 === 0 || (sent + failed) === total) {
-        await api.editMessage(`📡 𝗦𝗲𝗻𝗱𝗶𝗻𝗴 𝗡𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻...\n━━━━━━━━━━━━━━━━━━\n✅ 𝗦𝗲𝗻𝘁: ${sent}\n❌ 𝗙𝗮𝗶𝗹𝗲𝗱: ${failed}\n⏳ 𝗣𝗿𝗼𝗴𝗿𝗲𝘀𝘀: ${Math.round(((sent + failed) / total) * 100)}%`, statusMsg.messageID, threadID);
-      }
-
-      const finalDelay = attachments.length > 0 ? 1500 : delayPerGroup;
-      await new Promise(res => setTimeout(res, finalDelay));
+      await new Promise(res => setTimeout(res, delayPerGroup));
     }
 
-    const finalReport = `✅ 𝗡𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗖𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗱!\n━━━━━━━━━━━━━━━━━━\n🎯 𝗧𝗼𝘁𝗮𝗹 𝗧𝗮𝗿𝗴𝗲𝘁: ${total}\n🟢 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹: ${sent}\n🔴 𝗙𝗮𝗶𝗹𝗲𝗱: ${failed}\n\n✨ 𝗔𝗹𝗹 𝗴𝗿𝗼𝘂𝗽𝘀 𝗵𝗮𝘃𝗲 𝗯𝗲𝗲𝗻 𝗽𝗿𝗼𝗰𝗲𝘀𝘀𝗲𝗱.`;
-    
-    return api.editMessage(finalReport, statusMsg.messageID, threadID);
+    let report = "";
+    if (sent > 0) report += getLang("sentNotification", sent) + "\n";
+    if (failed.length > 0)
+      report += getLang(
+        "errorSendingNotification",
+        failed.length,
+        failed.map(f => `\n - ${f.err} [${f.id}]`).join("")
+      );
+
+    message.reply(report || "✅ All done!");
   }
 };
