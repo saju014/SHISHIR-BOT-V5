@@ -2,79 +2,85 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
+const apiUrl = "https://raw.githubusercontent.com/Saim-x69x/sakura/main/ApiUrl.json";
+
+async function getApiUrl() {
+  const res = await axios.get(apiUrl);
+  return res.data.apiv3;
+}
+
+async function urlToBase64(url) {
+  const res = await axios.get(url, { responseType: "arraybuffer" });
+  return Buffer.from(res.data).toString("base64");
+}
+
 module.exports = {
   config: {
     name: "edit",
-    aliases: ["imageedit", "ai-edit"],
-    version: "4.1",
-    author: "xalman",
-    countDown: 10,
+    version: "1.0",
+    author: "Saimx69x (Api by Kay)",
+    countDown: 5,
     role: 0,
-    shortDescription: "AI Image Editor",
-    longDescription: "Edit any image using AI by replying to it with a specific prompt.",
-    category: "AI & IMAGE GENERATION",
-    guide: "{pn} [reply to image] [prompt]"
+    shortDescription: "Edit an image using text prompt",
+    longDescription: "Only edits an existing image. Must reply to an image.",
+    category: "ai",
+    guide: "{p}edit <prompt> (reply to an image)"
   },
 
-  onStart: async function ({ event, message, args, api }) {
-    const { messageReply, type, messageID, threadID } = event;
+  onStart: async function ({ api, event, args, message }) {
+    const repliedImage = event.messageReply?.attachments?.[0];
+    const prompt = args.join(" ").trim();
 
-    if (
-      type !== "message_reply" ||
-      !messageReply.attachments ||
-      messageReply.attachments.length === 0 ||
-      messageReply.attachments[0].type !== "photo"
-    ) {
-      return api.sendMessage("⚠️ | Please reply to an image to start editing.", threadID, messageID);
+    if (!repliedImage || repliedImage.type !== "photo") {
+      return message.reply(
+        "❌ Please reply to an image to edit it.\n\nExample:\n/edit make it anime style"
+      );
     }
 
-    const prompt = args.join(" ");
     if (!prompt) {
-      return api.sendMessage("📝 | Please provide a prompt for editing.\nExample: {pn} change background to space", threadID, messageID);
+      return message.reply("❌ Please provide an edit prompt.");
     }
 
-    const imageUrl = encodeURIComponent(messageReply.attachments[0].url);
-    const cacheDir = path.join(__dirname, "cache");
-    const filePath = path.join(cacheDir, `edited_image_${Date.now()}.png`);
+    const processingMsg = await message.reply("🖌️ Editing image...");
 
-    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
-
-    api.setMessageReaction("🎨", messageID, (err) => {}, true);
-    const processingMsg = await api.sendMessage("🚀 | Processing your image, please wait...", threadID);
+    const imgPath = path.join(
+      __dirname,
+      "cache",
+      `${Date.now()}_edit.jpg`
+    );
 
     try {
-      const API_URL = `https://xalman-apis.vercel.app/api/edit?img=${imageUrl}&prompt=${encodeURIComponent(prompt)}`;
+      const API_URL = await getApiUrl();
 
-      const response = await axios({
-        method: 'GET',
-        url: API_URL,
-        responseType: 'arraybuffer',
-        timeout: 240000 
+      const payload = {
+        prompt: `Edit the given image based on this description:\n${prompt}`,
+        images: [await urlToBase64(repliedImage.url)],
+        format: "jpg"
+      };
+
+      const res = await axios.post(API_URL, payload, {
+        responseType: "arraybuffer",
+        timeout: 180000
       });
 
-      const buffer = Buffer.from(response.data, "utf-8");
-      await fs.writeFile(filePath, buffer);
+      await fs.ensureDir(path.dirname(imgPath));
+      await fs.writeFile(imgPath, Buffer.from(res.data));
 
-      api.setMessageReaction("✅", messageID, (err) => {}, true);
       await api.unsendMessage(processingMsg.messageID);
 
-      await api.sendMessage({
-        body: "✨ 𝗜𝗠𝗔𝗚𝗘 𝗘𝗗𝗜𝗧𝗘𝗗 𝗦𝗨𝗖𝗖𝗘𝗦𝗦𝗙𝗨𝗟𝗟𝗬 ✨\n━━━━━━━━━━━━━━━━━━━\nPrompt: " + prompt,
-        attachment: fs.createReadStream(filePath)
-      }, threadID, () => {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      }, messageID);
+      await message.reply({
+        body: `✅ Image edited successfully\nPrompt: ${prompt}`,
+        attachment: fs.createReadStream(imgPath)
+      });
 
-    } catch (err) {
-      api.setMessageReaction("❌", messageID, (err) => {}, true);
-      if (processingMsg.messageID) await api.unsendMessage(processingMsg.messageID);
-      
-      const errorMsg = err.code === "ECONNABORTED" 
-        ? "⏱️ | Request Timeout: Server took more than 2 minutes." 
-        : "🚫 | API Error: Could not edit image.";
-
-      api.sendMessage(errorMsg, threadID, messageID);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    } catch (error) {
+      console.error("EDIT Error:", error?.response?.data || error.message);
+      await api.unsendMessage(processingMsg.messageID);
+      message.reply("❌ Failed to edit image. Try again later.");
+    } finally {
+      if (fs.existsSync(imgPath)) {
+        await fs.remove(imgPath);
+      }
     }
   }
 };
