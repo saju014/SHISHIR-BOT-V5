@@ -105,7 +105,7 @@ module.exports = {
         ` 🪷 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${toSmallCaps(category || "General")}\n` +
         ` 🪷 𝐀𝐥𝐢𝐚𝐬𝐞𝐬: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
         ` 🪷 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${version || "1.0"}\n` +
-        ` 🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${shishir || "SHISHIR"}\n\n` +
+        ` 🪷 Author: ${author || "SHISHIR"}|| "SHISHIR"}\n\n` +
         ` ┌──────ʚ🍄ɞ──────┐\n` +
         `  📖 𝐃𝐞𝐬𝐜: ${desc}\n\n` +
         `  💡 𝐔𝐬𝐚𝐠𝐞: ${usage}\n` +
