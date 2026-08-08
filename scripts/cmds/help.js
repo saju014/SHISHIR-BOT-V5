@@ -105,12 +105,12 @@ module.exports = {
         ` 🪷 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${toSmallCaps(category || "General")}\n` +
         ` 🪷 𝐀𝐥𝐢𝐚𝐬𝐞𝐬: ${aliases?.length ? aliases.join(", ") : "None"}\n` +
         ` 🪷 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${version || "1.0"}\n` +
-        ` 🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${author || "S1FU"}\n\n` +
+        ` 🪷 𝐀𝐮𝐭𝐡𝐨𝐫: ${author || "SHISHIR"}\n\n` +
         ` ┌──────ʚ🍄ɞ──────┐\n` +
         `  📖 𝐃𝐞𝐬𝐜: ${desc}\n\n` +
         `  💡 𝐔𝐬𝐚𝐠𝐞: ${usage}\n` +
         ` └──────ʚ🍄ɞ──────┘\n\n` +
-        ` 🌸𝐒𝐭𝐚𝐲 𝐇𝐚𝐩𝐩𝐲&𝐁𝐞𝐚𝐮𝐭𝐢𝐟𝐮𝐥🌸\n` +
+        ` 🌸👑𝐎𝐰𝐧𝐞𝐫 :𝙊𝙬𝙣𝙚𝙧 :𝘼𝙝𝙢𝙚𝘿’𝙨 𝙨𝙝𝙞'𝙨𝙝𝙞𝙧🌸\n` +
         `╰┈───┈──────┈───┈╯`;
 
       return message.reply({ body: detailMsg, attachment: fs.createReadStream(videoPath) });
