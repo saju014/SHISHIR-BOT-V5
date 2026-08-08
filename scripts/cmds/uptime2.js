@@ -22,7 +22,7 @@ module.exports = {
   },
   onStart: async function ({ message, event, usersData, threadsData, api }) {
 
-    if (this.config.author !== 'shishir') {
+    if (this.config.author !== 'xalman') {
       return message.reply("⚠ Unauthorized author change detected. Command execution stopped.");
     }
 
@@ -62,7 +62,7 @@ module.exports = {
         `╭─❒ ${bold("RESOURCE USAGE")}\n│ 📟 RAM: [${ramBar}] ${memPercentage}%\n│ 📥 ${usedMemoryGB}GB / ${totalMemoryGB}GB\n│ 🛡️ CPU: ${cpuModel}\n│ ⚡ Load: ${cpuUsage[0].toFixed(2)}%\n╰───────────────❒`,
         `╭─❒ ${bold("BOT STATUS")}\n│ 🚀 Ping: ${botPing}ms\n│ 📦 Node: ${nodeVersion}\n│ 👥 Users: ${users.length}\n│ 🏘️ Groups: ${groups.length}\n╰───────────────❒`,
         `╭─❒ ${bold("SECURITY & TIME")}\n│ 🖼️ Media: ${mediaStatus}\n│ 📅 ${bangladeshTime}\n╰───────────────❒`,
-        `✨ ${bold("Status:")} All systems are operational.\nCreated by:SHISHIR ${this.config.author}`
+        `✨ ${bold("Status:")} All systems are operational.\nCreated by:-SHISHIR -👑 ${this.config.author}`
       ];
 
       const loadingFrames = [
