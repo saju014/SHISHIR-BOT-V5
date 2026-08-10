@@ -5,7 +5,7 @@ module.exports = {
 	config: {
 		name: "adduser",
 		version: "2.0",
-		author: "〲shishirツ࿐",
+		author: "〲MAMUNツ࿐",
 		countDown: 5,
 		role: 1,
 		description: {
@@ -186,7 +186,7 @@ module.exports = {
 				""
 			)}`;
 
-		msg += `\n━━━━━━━━━━━━━━\n👑 Admin: 𝙎𝙃𝙄𝙎𝙃𝙄𝙍`;
+		msg += `\n━━━━━━━━━━━━━━\n👑 Admin: 𝗠𝗔𝗠𝗨𝗡`;
 
 		await message.reply(msg);
 	}
