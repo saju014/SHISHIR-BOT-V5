@@ -1,73 +1,66 @@
 const axios = require("axios");
-const { Readable } = require("stream");
-const { API_BASE_URL } = require(__dirname + "/lib/config.js");
 
 module.exports = {
   config: {
     name: "nanobanana",
-    aliases: ["imggen", "kola"],
+    aliases: ["nanob", "nbedit", "edit"],
     version: "1.0",
-    author: "SIFAT",
-    countDown: 15,
+    author: "Neoaz ゐ", //API by RIFAT
+    countDown: 10,
     role: 0,
-    shortDescription: {
-      en: "Nano Banana AI image generator",
-    },
-    longDescription: {
-      en: "Generate 1-4 AI images from a text prompt using Nano Banana. Takes 20-60 seconds. No rate limit.",
-    },
-    category: "AI",
+    shortDescription: { en: "Generate or edit image with Nano Banana" },
+    longDescription: { en: "Generate or edit images using Nano Banana AI model" },
+    category: "image",
     guide: {
-      en: "{p}nanobanana <prompt> [--count <1-4>]\nExample: {p}nanobanana a cute cat on a rooftop at night\nExample: {p}nanobanana futuristic city --count 4",
-    },
+      en: "{pn} <prompt> - Generate image\nReply to an image with: {pn} <prompt> - Edit image"
+    }
   },
 
-  onStart: async function ({ api, event, args, message }) {
-    let numImages = 1;
-    const countIdx = args.indexOf("--count");
-    if (countIdx !== -1 && args[countIdx + 1]) {
-      numImages = Math.min(4, Math.max(1, parseInt(args[countIdx + 1]) || 1));
-      args.splice(countIdx, 2);
+  onStart: async function ({ message, event, api, args }) {
+    const hasPrompt = args.length > 0;
+    const hasPhotoReply = event.type === "message_reply" && event.messageReply?.attachments?.[0]?.type === "photo";
+
+    if (!hasPrompt && !hasPhotoReply) {
+      return message.reply("Please provide a prompt or reply to an image.");
     }
 
     const prompt = args.join(" ").trim();
-    if (!prompt) {
-      return message.reply(
-        "Please provide a prompt.\nExample: {p}nanobanana a cute cat on a rooftop at night"
-      );
-    }
-
-    await message.reply(
-      `Generating ${numImages} image(s)...\nPrompt: "${prompt}"\n\nPlease wait 20-60 seconds.`
-    );
+    const isEdit = hasPhotoReply;
+    const model = isEdit ? "nano banana edit" : "nano banana";
 
     try {
-      const res = await axios.post(
-        `${API_BASE_URL}/api/nano-banana`,
-        { prompt, numImages },
-        { timeout: 180000 }
-      );
+      api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
-      const images = res.data?.data?.images;
-      if (!images || images.length === 0) throw new Error("No images generated");
+      const imageUrl = hasPhotoReply ? event.messageReply.attachments[0].url : undefined;
 
-      const attachments = images.map((b64) => {
-        const clean = b64.replace(/^data:image\/\w+;base64,/, "");
-        const buf = Buffer.from(clean, "base64");
-        const stream = new Readable();
-        stream.push(buf);
-        stream.push(null);
-        stream.path = "veoai_image.jpg";
-        return stream;
+      const res = await axios.get("https://fluxcdibai-1.onrender.com/generate", {
+        params: {
+          prompt,
+          model,
+          ...(imageUrl ? { imageUrl } : {})
+        },
+        timeout: 120000
       });
 
-      return message.reply({
-        body: `${images.length} image(s) generated!\nPrompt: "${prompt}"`,
-        attachment: attachments,
+      const data = res.data;
+      const resultUrl = data?.data?.imageResponseVo?.url;
+
+      if (!resultUrl) {
+        api.setMessageReaction("❌", event.messageID, () => {}, true);
+        return message.reply("Failed to process image.");
+      }
+
+      api.setMessageReaction("✅", event.messageID, () => {}, true);
+
+      await message.reply({
+        body: isEdit ? "Image edited 🐦" : "Image generated 🐦",
+        attachment: await global.utils.getStreamFromURL(resultUrl)
       });
+
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || "Unknown error";
-      return message.reply(`Error: ${errMsg}`);
+      console.error(err);
+      api.setMessageReaction("❌", event.messageID, () => {}, true);
+      return message.reply("Error while processing image.");
     }
-  },
+  }
 };
