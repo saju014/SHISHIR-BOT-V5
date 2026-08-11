@@ -1,125 +1,133 @@
-
 module.exports = {
   config: {
-    name: "slot",
-    version: "1.0",
-    author: "Shishir",
-    countDown: 5,
+    name: "slots",
+    aliases: ["slot", "spin"],
+    version: "1.3",
+    author: "Shishir ",
+    countDown: 3,
     role: 0,
+    description: "🎰 Ultra-stylish slot machine with balanced odds",
     category: "game",
-    description: "🎰 𝖧𝗒𝗉𝖾𝗋-𝖲𝗅𝗈𝗍 𝖬𝖺𝖼𝗁𝗂𝗇𝖾 𝗐𝗂𝗍𝗁 𝖲𝗆𝖺𝗋𝗍 𝖡𝖺𝗅𝖺𝗇𝖼𝖾",
-    usage: "slot <amount>\nSupports: 50k, 1.5m, 2b, all"
+    guide: {
+      en: "Use: {pn} [bet amount]"
+    }
   },
 
-  onStart: async function ({ event, api, usersData, args }) {
-    const { threadID, messageID, senderID } = event;
-    const userData = await usersData.get(senderID);
-    let money = userData.money;
+  onStart: async function ({ message, event, args, usersData }) {
+    const { senderID } = event;
+    const bet = parseInt(args[0]);
 
-
-    const fonts = {
-      "a":"A","b":"ʙ","c":"ᴄ","d":"ᴅ","e":"ᴇ","f":"ꜰ","g":"ɢ","h":"ʜ","i":"ɪ","j":"ᴊ","k":"ᴋ","l":"ʟ","m":"ᴍ",
-      "n":"ɴ","o":"ᴏ","p":"ᴘ","q":"ǫ","r":"ʀ","s":"ꜱ","t":"ᴛ","u":"ᴜ","v":"ᴠ","w":"ᴡ","x":"x","y":"ʏ","z":"ᴢ",
-      "0": "𝟎", "1": "𝟏", "2": "𝟐", "3": "𝟑", "4": "𝟒", "5": "𝟓", "6": "𝟔", "7": "𝟕", "8": "𝟖", "9": "𝟗", ".": ".", "+": "+", "-": "-"
-    };
-    const stylize = (text) => text.toString().split('').map(char => fonts[char] || char).join('');
-
-
-    const formatMoney = (num) => {
-      if (Math.abs(num) >= 1.0e+12) return (Math.abs(num) / 1.0e+12).toFixed(2) + "T";
-      if (Math.abs(num) >= 1.0e+9) return (Math.abs(num) / 1.0e+9).toFixed(2) + "B";
-      if (Math.abs(num) >= 1.0e+6) return (Math.abs(num) / 1.0e+6).toFixed(2) + "M";
-      if (Math.abs(num) >= 1.0e+3) return (Math.abs(num) / 1.0e+3).toFixed(2) + "K";
-      return Math.abs(num).toFixed(0);
-    };
-
-    const parseBet = (input) => {
-      if (!input) return 0;
-      const str = input.toLowerCase();
-
-      if (str === 'all' || str === 'max') return money;
-
-      let val = parseFloat(str);
-      if (isNaN(val)) return 0;
-
-      if (str.includes('t')) return val * 1e12;
-      if (str.includes('b')) return val * 1e9;
-      if (str.includes('m')) return val * 1e6;
-      if (str.includes('k')) return val * 1e3;
-      return val;
+    // Enhanced money formatting with colors
+    const formatMoney = (amount) => {
+      if (isNaN(amount)) return "💲0";
+      amount = Number(amount);
+      const scales = [
+        { value: 1e15, suffix: 'Q', color: '🌈' },  // Quadrillion
+        { value: 1e12, suffix: 'T', color: '✨' },  // Trillion
+        { value: 1e9, suffix: 'B', color: '💎' },  // Billion
+        { value: 1e6, suffix: 'M', color: '💰' },   // Million
+        { value: 1e3, suffix: 'k', color: '💵' }    // Thousand
+      ];
+      const scale = scales.find(s => amount >= s.value);
+      if (scale) {
+        const scaledValue = amount / scale.value;
+        return `${scale.color}${scaledValue.toFixed(2)}${scale.suffix}`;
+      }
+      return `💲${amount.toLocaleString()}`;
     };
 
-    const bet = parseBet(args[0]);
-
-
-    if (bet < 50) return api.sendMessage(`⚠️ ${stylize("Minimum bet is 50$")}`, threadID, messageID);
-    if (isNaN(bet)) return api.sendMessage(`⚠️ ${stylize("Invalid Amount.")}`, threadID, messageID);
-    if (money < bet) return api.sendMessage(`💳 ${stylize("Insufficient Funds.")}\n${stylize("You have: " + formatMoney(money))}`, threadID, messageID);
-
-
-    await usersData.set(senderID, { money: money - bet });
-    const symbols = ["🇧🇩", "🇮🇩", "🏴‍☠️", "🇦🇷", "🇯🇵", "🇵🇰"];
-    let s1, s2, s3;
-    const chance = Math.random();
-
-
-    if (chance < 0.15) {
-      s1 = s2 = s3 = symbols[Math.floor(Math.random() * symbols.length)];
-    } else if (chance < 0.55) {
-      s1 = s2 = symbols[Math.floor(Math.random() * symbols.length)];
-      s3 = symbols.filter(s => s !== s1)[Math.floor(Math.random() * (symbols.length - 1))];
-    } else {
-      const shuffled = [...symbols].sort(() => 0.5 - Math.random());
-      [s1, s2, s3] = [shuffled[0], shuffled[1], shuffled[2]];
+    if (isNaN(bet) || bet <= 0) {
+      return message.reply("🔴 𝗘𝗥𝗥𝗢𝗥: Please enter a valid bet amount!");
     }
 
-    let winnings = 0;
-    let status = "🦖 𝖫𝖮𝖲𝖲";
-    let multiplier = 0;
-
-    if (s1 === s2 && s2 === s3) {
-      winnings = bet * 15;
-      status = "💎 𝖩𝖠𝖢𝖪𝖯𝖮𝖳";
-      multiplier = 15;
-    } else if (s1 === s2 || s1 === s3 || s2 === s3) {
-      winnings = bet * 3;
-      status = "✨ 𝖶𝖨𝖭";
-      multiplier = 3;
+    const user = await usersData.get(senderID);
+    if (user.money < bet) {
+      return message.reply(`🔴 𝗜𝗡𝗦𝗨𝗙𝗙𝗜𝗖𝗜𝗘𝗡𝗧 𝗙𝗨𝗡𝗗𝗦: You need ${formatMoney(bet - user.money)} more to play!`);
     }
 
-    const finalBalance = (money - bet) + winnings;
-    await usersData.set(senderID, { money: finalBalance });
-
-    const msgInstance = await api.sendMessage(`｢ 🎰 ｣ 𝖲𝖸𝖲𝖳𝖤𝖬 𝖲𝖳𝖠𝖱𝖳...`, threadID, messageID);
-
-    const frames = [
-      { s: ["🔄", "🔄", "🔄"], txt: "𝗜𝗡𝗜𝗧𝗜𝗔𝗟𝗜𝗭𝗜𝗡𝗚" },
-      { s: [symbols[1], symbols[4], "🔄"], txt: "𝗦𝗬𝗡𝗖𝗛𝗥𝗢𝗡𝗜𝗭𝗜𝗡𝗚" },
-      { s: ["🔄", symbols[0], symbols[5]], txt: "𝗖𝗔𝗟𝗜𝗕𝗥𝗔𝗧𝗜𝗡𝗚" },
-      { s: [s1, s2, s3], txt: "𝗖𝗢𝗠𝗣𝗟𝗘𝗧𝗘𝗗" }
+    // Premium symbols with different weights
+    const symbols = [
+      { emoji: "🍒", weight: 30 },
+      { emoji: "🍋", weight: 25 },
+      { emoji: "🍇", weight: 20 },
+      { emoji: "🍉", weight: 15 },
+      { emoji: "⭐", weight: 7 },
+      { emoji: "7️⃣", weight: 3 }
     ];
 
-    for (let i = 0; i < frames.length; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      const isLast = i === frames.length - 1;
+    // Weighted random selection
+    const roll = () => {
+      const totalWeight = symbols.reduce((sum, symbol) => sum + symbol.weight, 0);
+      let random = Math.random() * totalWeight;
+      for (const symbol of symbols) {
+        if (random < symbol.weight) return symbol.emoji;
+        random -= symbol.weight;
+      }
+      return symbols[0].emoji;
+    };
 
-      const profitDisplay = isLast
-        ? (winnings > 0 ? `+${formatMoney(winnings)}` : `-${formatMoney(bet)}`)
-        : "---";
+    const slot1 = roll();
+    const slot2 = roll();
+    const slot3 = roll();
 
+    // 50% chance to win with various multipliers
+    let winnings = 0;
+    let outcome;
+    let winType = "";
+    let bonus = "";
 
-      const ui =
-        `   ◢ ${stylize("SLOTS MACHINE")} ◣\n` +
-        `╭───────────────╮\n` +
-        `│    ${frames[i].s[0]}  │  ${frames[i].s[1]}  │  ${frames[i].s[2]}  │\n` +
-        `╰───────────────╯\n` +
-        `◈ 𝖲𝖳𝖠𝖳𝖴𝖲: ${isLast ? stylize(status) : stylize(frames[i].txt)}\n` +
-        `────────────────────\n` +
-        `⌬ 𝖡𝖤𝖳 : ${stylize(formatMoney(bet))}\n` +
-        `⌬ 𝖶𝖨𝖭 : ${stylize(profitDisplay)}\n` +
-        `⌬ 𝖡𝖠𝖫 : ${stylize(formatMoney(finalBalance))}`;
-
-      await api.editMessage(ui, msgInstance.messageID, threadID);
+    if (slot1 === "7️⃣" && slot2 === "7️⃣" && slot3 === "7️⃣") {
+      winnings = bet * 10;
+      outcome = "🔥 𝗠𝗘𝗚𝗔 𝗝𝗔𝗖𝗞𝗣𝗢𝗧! 𝗧𝗥𝗜𝗣𝗟𝗘 7️⃣!";
+      winType = "💎 𝗠𝗔𝗫 𝗪𝗜𝗡";
+      bonus = "🎆 𝗕𝗢𝗡𝗨𝗦: +3% to your total balance!";
+      await usersData.set(senderID, { money: user.money * 1.03 });
+    } 
+    else if (slot1 === slot2 && slot2 === slot3) {
+      winnings = bet * 5;
+      outcome = "💰 𝗝𝗔𝗖𝗞𝗣𝗢𝗧! 3 matching symbols!";
+      winType = "💫 𝗕𝗜𝗚 𝗪𝗜𝗡";
+    } 
+    else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
+      winnings = bet * 2;
+      outcome = "✨ 𝗡𝗜𝗖𝗘! 2 matching symbols!";
+      winType = "🌟 𝗪𝗜𝗡";
+    } 
+    else if (Math.random() < 0.5) { // 50% base chance to win something
+      winnings = bet * 1.5;
+      outcome = "🎯 𝗟𝗨𝗖𝗞𝗬 𝗦𝗣𝗜𝗡! Bonus win!";
+      winType = "🍀 𝗦𝗠𝗔𝗟𝗟 𝗪𝗜𝗡";
+    } 
+    else {
+      winnings = -bet;
+      outcome = "💸 𝗕𝗘𝗧𝗧𝗘𝗥 𝗟𝗨𝗖𝗞 𝗡𝗘𝗫𝗧 𝗧𝗜𝗠𝗘!";
+      winType = "☠️ 𝗟𝗢𝗦𝗦";
     }
+
+    await usersData.set(senderID, { money: user.money + winnings });
+    const finalBalance = user.money + winnings;
+
+    // Fancy ASCII art for slots
+    const slotBox = 
+      "╔═════════════════════╗\n" +
+      "║  🎰 𝗦𝗟𝗢𝗧 𝗠𝗔𝗖𝗛𝗜𝗡𝗘 🎰  ║\n" +
+      "╠═════════════════════╣\n" +
+      `║     [ ${slot1} | ${slot2} | ${slot3} ]     ║\n` +
+      "╚═════════════════════╝";
+
+    // Color-coded result message
+    const resultColor = winnings >= 0 ? "🟢" : "🔴";
+    const resultText = winnings >= 0 ? `🏆 𝗪𝗢𝗡: ${formatMoney(winnings)}` : `💸 𝗟𝗢𝗦𝗧: ${formatMoney(bet)}`;
+
+    const messageContent = 
+      `${slotBox}\n\n` +
+      `🎯 𝗥𝗘𝗦𝗨𝗟𝗧: ${outcome}\n` +
+      `${winType ? `${winType}\n` : ""}` +
+      `${bonus ? `${bonus}\n` : ""}` +
+      `\n${resultColor} ${resultText}` +
+      `\n💰 𝗕𝗔𝗟𝗔𝗡𝗖𝗘: ${formatMoney(finalBalance)}` +
+      `\n\n💡 𝗧𝗜𝗣: Higher bets increase jackpot chances!`;
+
+    return message.reply(messageContent);
   }
 };
