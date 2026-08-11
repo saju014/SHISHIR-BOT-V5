@@ -109,7 +109,7 @@ module.exports = {
       out.on("finish", () => {
         api.sendMessage(
           {
-            body: "⚡𝚊𝙻𝚢𝚊 𝚄𝚙𝚝𝚒𝚖𝚎 𝙸𝚗𝚏𝚘:",
+            body: "⚡Nezuko🌷 𝚄𝚙𝚝𝚒𝚖𝚎 𝙸𝚗𝚏𝚘:",
             attachment: fs.createReadStream(outPath)
           },
           event.threadID,
