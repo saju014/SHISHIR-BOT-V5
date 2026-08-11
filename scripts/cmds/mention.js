@@ -25,7 +25,7 @@ module.exports = {
 
 		if (mentionedIDs.some(uid => bossUIDs.includes(uid))) {
 			return api.sendMessage(
-				"Boss ekhon busy ache free hoye reply dibe 🫠🌷",
+				"-কিরে বোকাচোদা বসরে মেনশন,  দেও কে। বস এখন পরকীয়ায় বিজি। তুমি পরকীয়া করতে চাইলে ইনবক্স করো বারবার বসের মেনশন দিস না -আর একবার মেনশন দিলে তোর নানির খালিঘর-🫠🌷",
 				event.threadID,
 				event.messageID
 			);
