@@ -1,44 +1,78 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "anisearch",
-    aliases: ["amv", "animesearch"],
-    version: "1.0",
-    author: "xalman",
-    countDown: 3,
+    aliases: ["ani"],
+    version: "0.0.7",
+    author: "Azadx69x",
     role: 0,
-    description: "Search and get Anime TikTok videos",
-    category: "ANIME & MEDIA",
-    guide: "{pn} <anime name>"
+    category: "anime",
+    shortDescription: "Fetch Anisearch video",
+    longDescription: "Anisearch send a video",
+    cooldown: 5
   },
 
-  onStart: async function ({ message, args }) {
-    const query = args.join(" ");
-    if (!query) return message.reply("Please provide an anime name to search.");
+  onStart: async function({ message, args, api, event }) {
+    return this.run({ message, args, api, event });
+  },
 
-    const API_URL = `https://xalman-apis.vercel.app/api/anisearch?q=${encodeURIComponent(query)}`;
+  onChat: async function({ message, args, event, api }) {
+    const body = (event.body || "").toLowerCase();
+    if (!body.startsWith("anisearch")) return;
+    args = body.split(" ").slice(1);
+    return this.run({ message, args, api, event });
+  },
 
+  run: async function({ message, args, api, event }) {
     try {
-      message.reply(`Searching for "${query}"...`);
-      const res = await axios.get(API_URL);
-      const results = res.data.results;
+      const character = args.join(" ").trim();
+      const apiUrl = `https://azadx69x-all-apis-top.vercel.app/api/anisearch?character=${encodeURIComponent(character)}`;
+    	
+      api.setMessageReaction("✨", event.messageID, event.threadID, () => {}, true);
 
-      if (!results || results.length === 0) {
-        return message.reply("No videos found for your search.");
+      const { data } = await axios.get(apiUrl);
+
+      if (!data?.success) {
+        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
+        return message.reply(`❌ ${data?.message || "No Anisearch videos found"}`);
       }
 
-      const video = results[0]; 
-      const stream = await global.utils.getStreamFromURL(video.video_url);
+      let video = data.data;
+    	
+      if (video.duration && video.duration > 60) {
+        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
+        return message.reply("❌ Video is too long! Only short videos (< 1 min) are allowed.");
+      }
+    	
+      const videoUrl = video.video_url.replace(/^\[|\]$/g, "");
+      const filePath = path.join(__dirname, `anisearch_${Date.now()}.mp4`);
+      const writer = fs.createWriteStream(filePath);
+      const response = await axios({ url: videoUrl, method: "GET", responseType: "stream" });
+      response.data.pipe(writer);
 
-      return message.reply({
-        body: `🎬 *Title:* ${video.title}\n👤 *creator:* ${video.author}\n👁️ *Views:* ${video.views.toLocaleString()}`,
-        attachment: stream
+      writer.on("finish", async () => {
+        api.setMessageReaction("✅", event.messageID, event.threadID, () => {}, true);
+        
+        await message.reply({
+          body: "",
+          attachment: fs.createReadStream(filePath)
+        });
+
+        fs.unlinkSync(filePath);
       });
 
-    } catch (e) {
-      console.error(e);
-      return message.reply("❌ Error fetching video from TikTok.");
+      writer.on("error", () => {
+        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
+        return message.reply("❌ Error downloading video!");
+      });
+
+    } catch (err) {
+      console.error("❌ Anisearch CMD Error:", err.message);
+      api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
+      return message.reply("❌ Failed to fetch Anisearch video. Try again later.");
     }
   }
 };
