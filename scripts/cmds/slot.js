@@ -1,133 +1,129 @@
+const fs = require("fs-extra");
+const path = require("path");
+
 module.exports = {
   config: {
-    name: "slots",
-    aliases: ["slot", "spin"],
-    version: "1.3",
-    author: "Shishir ",
-    countDown: 3,
+    name: "slot",
+    version: "4.0",
+    author: "ARIYAN AI",
+    countDown: 5,
     role: 0,
-    description: "🎰 Ultra-stylish slot machine with balanced odds",
-    category: "game",
-    guide: {
-      en: "Use: {pn} [bet amount]"
-    }
+    category: "Game",
+    guide: "{pn} <amount> (Example: !slot 10k, !slot 1m, !slot 300m)"
   },
 
-  onStart: async function ({ message, event, args, usersData }) {
-    const { senderID } = event;
-    const bet = parseInt(args[0]);
+  onStart: async function ({ args, message, event, usersData }) {
+    const { senderID, threadID, messageID } = event;
+    const userData = await usersData.get(senderID);
 
-    // Enhanced money formatting with colors
-    const formatMoney = (amount) => {
-      if (isNaN(amount)) return "💲0";
-      amount = Number(amount);
-      const scales = [
-        { value: 1e15, suffix: 'Q', color: '🌈' },  // Quadrillion
-        { value: 1e12, suffix: 'T', color: '✨' },  // Trillion
-        { value: 1e9, suffix: 'B', color: '💎' },  // Billion
-        { value: 1e6, suffix: 'M', color: '💰' },   // Million
-        { value: 1e3, suffix: 'k', color: '💵' }    // Thousand
-      ];
-      const scale = scales.find(s => amount >= s.value);
-      if (scale) {
-        const scaledValue = amount / scale.value;
-        return `${scale.color}${scaledValue.toFixed(2)}${scale.suffix}`;
-      }
-      return `💲${amount.toLocaleString()}`;
-    };
+    // ১. অ্যামাউন্ট পার্সিং
+    if (!args[0]) return message.reply("❌ কত টাকা স্লট মারতে চান তা লিখুন। (যেমন: !slot 100k)");
+    let amount = parseAmount(args[0]);
 
-    if (isNaN(bet) || bet <= 0) {
-      return message.reply("🔴 𝗘𝗥𝗥𝗢𝗥: Please enter a valid bet amount!");
+    if (isNaN(amount) || amount <= 0) return message.reply("❌ দয়া করে সঠিক টাকার পরিমাণ লিখুন।");
+    if (amount > 300000000) return message.reply("❌ জানু, একবারে সর্বোচ্চ 300M (৩০০ মিলিয়ন) পর্যন্ত স্লট মারা যাবে।");
+    if (amount > userData.money) return message.reply(`❌ আপনার কাছে পর্যাপ্ত টাকা নেই! আপনার আছে: $${userData.money.toLocaleString()}`);
+
+    // ২. কুলডাউন ও লিমিট সিস্টেম (৩৫ বার / ২ ঘণ্টা)
+    const now = Date.now();
+    const cooldownTime = 2 * 60 * 60 * 1000; 
+    const maxSpins = 35;
+
+    if (!userData.data) userData.data = {};
+    if (!userData.data.slotInfo) {
+      userData.data.slotInfo = { count: 0, lastTime: now };
     }
 
-    const user = await usersData.get(senderID);
-    if (user.money < bet) {
-      return message.reply(`🔴 𝗜𝗡𝗦𝗨𝗙𝗙𝗜𝗖𝗜𝗘𝗡𝗧 𝗙𝗨𝗡𝗗𝗦: You need ${formatMoney(bet - user.money)} more to play!`);
+    let { count, lastTime } = userData.data.slotInfo;
+
+    if (now - lastTime > cooldownTime) {
+      count = 0; 
+      lastTime = now;
     }
 
-    // Premium symbols with different weights
-    const symbols = [
-      { emoji: "🍒", weight: 30 },
-      { emoji: "🍋", weight: 25 },
-      { emoji: "🍇", weight: 20 },
-      { emoji: "🍉", weight: 15 },
-      { emoji: "⭐", weight: 7 },
-      { emoji: "7️⃣", weight: 3 }
-    ];
+    if (count >= maxSpins) {
+      const remaining = cooldownTime - (now - lastTime);
+      const hours = Math.floor(remaining / (60 * 60 * 1000));
+      const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+      const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+      return message.reply(`❌ | আপনি আপনার স্লট সীমা (৩৫ বার) অতিক্রম করেছেন।\nআবার চেষ্টা করুন: ${hours} ঘণ্টা ${minutes} মিনিট ${seconds} সেকেন্ড পর।`);
+    }
 
-    // Weighted random selection
-    const roll = () => {
-      const totalWeight = symbols.reduce((sum, symbol) => sum + symbol.weight, 0);
-      let random = Math.random() * totalWeight;
-      for (const symbol of symbols) {
-        if (random < symbol.weight) return symbol.emoji;
-        random -= symbol.weight;
-      }
-      return symbols[0].emoji;
-    };
+    // ৩. স্লট লজিক এবং আইটেম
+    const items = ["🍓", "🦆", "🐢", "🍎", "🍊", "🍇", "💎"];
+    const s1 = items[Math.floor(Math.random() * items.length)];
+    const s2 = items[Math.floor(Math.random() * items.length)];
+    const s3 = items[Math.floor(Math.random() * items.length)];
+    const s4 = items[Math.floor(Math.random() * items.length)];
+    const s5 = items[Math.floor(Math.random() * items.length)];
 
-    const slot1 = roll();
-    const slot2 = roll();
-    const slot3 = roll();
-
-    // 50% chance to win with various multipliers
-    let winnings = 0;
-    let outcome;
+    let win = false;
+    let multiplier = 0;
     let winType = "";
-    let bonus = "";
 
-    if (slot1 === "7️⃣" && slot2 === "7️⃣" && slot3 === "7️⃣") {
-      winnings = bet * 10;
-      outcome = "🔥 𝗠𝗘𝗚𝗔 𝗝𝗔𝗖𝗞𝗣𝗢𝗧! 𝗧𝗥𝗜𝗣𝗟𝗘 7️⃣!";
-      winType = "💎 𝗠𝗔𝗫 𝗪𝗜𝗡";
-      bonus = "🎆 𝗕𝗢𝗡𝗨𝗦: +3% to your total balance!";
-      await usersData.set(senderID, { money: user.money * 1.03 });
+    // অ্যাডভান্সড ১x থেকে ১০x উইনিং লজিক
+    if (s1 === s2 && s2 === s3 && s3 === s4 && s4 === s5) { 
+        win = true; multiplier = 10; winType = "👑 𝐉𝐀𝐂𝐊𝐏𝐎𝐓 👑"; 
     } 
-    else if (slot1 === slot2 && slot2 === slot3) {
-      winnings = bet * 5;
-      outcome = "💰 𝗝𝗔𝗖𝗞𝗣𝗢𝗧! 3 matching symbols!";
-      winType = "💫 𝗕𝗜𝗚 𝗪𝗜𝗡";
-    } 
-    else if (slot1 === slot2 || slot2 === slot3 || slot1 === slot3) {
-      winnings = bet * 2;
-      outcome = "✨ 𝗡𝗜𝗖𝗘! 2 matching symbols!";
-      winType = "🌟 𝗪𝗜𝗡";
-    } 
-    else if (Math.random() < 0.5) { // 50% base chance to win something
-      winnings = bet * 1.5;
-      outcome = "🎯 𝗟𝗨𝗖𝗞𝗬 𝗦𝗣𝗜𝗡! Bonus win!";
-      winType = "🍀 𝗦𝗠𝗔𝗟𝗟 𝗪𝗜𝗡";
-    } 
-    else {
-      winnings = -bet;
-      outcome = "💸 𝗕𝗘𝗧𝗧𝗘𝗥 𝗟𝗨𝗖𝗞 𝗡𝗘𝗫𝗧 𝗧𝗜𝗠𝗘!";
-      winType = "☠️ 𝗟𝗢𝗦𝗦";
+    else if ((s1 === s2 && s2 === s3 && s3 === s4) || (s2 === s3 && s3 === s4 && s4 === s5)) { 
+        win = true; multiplier = 7; winType = "🔥 𝐐𝐔𝐀𝐃𝐑𝐔𝐏𝐋𝐄 🔥";
+    }
+    else if ((s1 === s2 && s2 === s3) || (s2 === s3 && s3 === s4) || (s3 === s4 && s4 === s5)) { 
+        win = true; multiplier = 4; winType = "✨ 𝐓𝐑𝐈𝐏𝐋𝐄 ✨";
+    }
+    else if ((s1 === s2 && s4 === s5) || (s1 === s2 && s3 === s4) || (s2 === s3 && s4 === s5)) {
+        win = true; multiplier = 2.5; winType = "🎀 𝐓𝐖𝐎 𝐏𝐀𝐈𝐑𝐒 🎀";
+    }
+    else if (s1 === s2 || s2 === s3 || s3 === s4 || s4 === s5 || s1 === s5) {
+        win = true; multiplier = 1.5; winType = "🎈 𝐎𝐍𝐄 𝐏𝐀𝐈𝐑 🎈";
+    } else {
+        // কোনো পেয়ার না মিললে ৫% চান্স লাকি ব্রেক (১x রিফান্ড)
+        if (Math.random() < 0.05) {
+          win = true; multiplier = 1; winType = "🍀 𝐋𝐔𝐂𝐊𝐘 𝐁𝐑𝐄𝐀𝐊 🍀";
+        }
     }
 
-    await usersData.set(senderID, { money: user.money + winnings });
-    const finalBalance = user.money + winnings;
+    const winnings = win ? Math.floor(amount * multiplier) : -amount;
+    const finalMoney = (userData.money || 0) + winnings;
 
-    // Fancy ASCII art for slots
-    const slotBox = 
-      "╔═════════════════════╗\n" +
-      "║  🎰 𝗦𝗟𝗢𝗧 𝗠𝗔𝗖𝗛𝗜𝗡𝗘 🎰  ║\n" +
-      "╠═════════════════════╣\n" +
-      `║     [ ${slot1} | ${slot2} | ${slot3} ]     ║\n` +
-      "╚═════════════════════╝";
+    // ডাটাবেস আপডেট
+    userData.data.slotInfo = { count: count + 1, lastTime: lastTime };
+    await usersData.set(senderID, {
+      money: finalMoney,
+      data: userData.data
+    });
 
-    // Color-coded result message
-    const resultColor = winnings >= 0 ? "🟢" : "🔴";
-    const resultText = winnings >= 0 ? `🏆 𝗪𝗢𝗡: ${formatMoney(winnings)}` : `💸 𝗟𝗢𝗦𝗧: ${formatMoney(bet)}`;
+    // ৪. প্রিমিয়াম ক্যাসিনো স্টাইল টেক্সট UI ডিজাইন
+    const statusEmoji = win ? "🟢" : "🔴";
+    const resultHeader = win ? "🎉 𝐘𝐎𝐔 𝐖𝐎𝐍 🎉" : "💀 𝐘𝐎𝐔 𝐋𝐎𝐒𝐄 💀";
+    
+    const resultMsg = `🎰 ═══ 𝐂𝐀𝐒𝐈𝐍𝐎 𝐒𝐋𝐎𝐓 ═══ 🎰
 
-    const messageContent = 
-      `${slotBox}\n\n` +
-      `🎯 𝗥𝗘𝗦𝗨𝗟𝗧: ${outcome}\n` +
-      `${winType ? `${winType}\n` : ""}` +
-      `${bonus ? `${bonus}\n` : ""}` +
-      `\n${resultColor} ${resultText}` +
-      `\n💰 𝗕𝗔𝗟𝗔𝗡𝗖𝗘: ${formatMoney(finalBalance)}` +
-      `\n\n💡 𝗧𝗜𝗣: Higher bets increase jackpot chances!`;
+✨ 𝘓𝘶𝘤𝘬𝘺 𝘙𝘦𝘦𝘭𝘴:
+  💎 ╔══════════════╗ 💎
+       [  ${s1}  |  ${s2}  |  ${s3}  |  ${s4}  |  ${s5}  ]
+  💎 ╚══════════════╝ 💎
 
-    return message.reply(messageContent);
+💵 𝐁𝐞𝐭 𝐀𝐦𝐨𝐮𝐧𝐭: $${amount.toLocaleString()}
+🎯 𝐑𝐞𝐬𝐮𝐥𝐭: ${resultHeader}
+
+${statusEmoji} 𝐒𝐭𝐚𝐭𝐮𝐬: ${win ? `${winType} (${multiplier}x)` : "𝐁𝐞𝐭𝐭𝐞𝐫 𝐥𝐮𝐜𝐤 𝐧𝐞𝐱𝐭 𝐭𝐢𝐦𝐞!"}
+💰 ${win ? "𝐏𝐫𝐨𝐟𝐢𝐭" : "𝐋𝐨𝐬𝐬"}: $${Math.abs(winnings).toLocaleString()}
+💳 𝐂𝐮𝐫𝐫𝐞𝐧𝐭 𝐁𝐚𝐥𝐚𝐧𝐜𝐞: $${finalMoney.toLocaleString()}
+
+⚙️ 𝐒𝐩𝐢𝐧 𝐋𝐢𝐦𝐢𝐭: [ ${count + 1} / 35 ]
+🔔 𝘛𝘪𝘱: 𝘓𝘪𝘮𝘪𝘵 𝘴𝘩𝘦𝘴𝘩 𝘩𝘰𝘭𝘦 2𝘩 𝘸𝘢𝘪𝘵 𝘬𝘰𝘳𝘵𝘦 𝘩𝘰𝘣𝘦!`;
+
+    return message.reply(resultMsg);
   }
 };
+
+function parseAmount(input) {
+  if (typeof input !== "string") return input;
+  const unit = input.slice(-1).toLowerCase();
+  const value = parseFloat(input);
+  if (unit === 'k') return value * 1000;
+  if (unit === 'm') return value * 1000000;
+  if (unit === 'b') return value * 1000000000;
+  return value;
+      }
