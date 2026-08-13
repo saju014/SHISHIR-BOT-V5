@@ -9,7 +9,7 @@ module.exports = {
     version: "1.0.0",
     author: "SIFAT",
     countDown: 5,
-    role: 0,
+    role: 2,
     shortDescription: "XNXX meme image ",
     longDescription: "Generate an XNXX style meme with user avatar",
     category: "fun",
