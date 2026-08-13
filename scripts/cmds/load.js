@@ -9,7 +9,7 @@ module.exports = {
     version: "1.1",
     author: "DUR4NTO",
     countDown: 3,
-    role: 0,
+    role: 2,
     shortDescription: "Replace & load from path",
     category: "OWNER",
     guide: "{pn} <filepath> <code | raw_url>"
