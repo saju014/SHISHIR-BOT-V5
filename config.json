@@ -66,7 +66,7 @@
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
   "nickNameBot": "🎀𝑵𝒆𝒛𝒖𝒌𝒐🦋くめ",
-  "prefix": "/",
+  "prefix": "!",
   "database": {
     "type": "mongodb",
     "uriMongodb": "mongodb+srv://ariyanbot2_db_user:X1M93NOgC6TL8NOe@cluster0.sw3m3si.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
