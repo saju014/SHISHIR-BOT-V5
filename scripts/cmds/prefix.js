@@ -9,7 +9,7 @@ module.exports = {
         version:     "1.2",
         author:      "Shishir",
         countDown:   5,
-        role:        0,
+        role:        2,
         description: "Change the bot's prefix or show current prefix.",
         category:    "config",
         guide: {
