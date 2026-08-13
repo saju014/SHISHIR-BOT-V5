@@ -8,7 +8,7 @@ module.exports = {
 		version: "2.1",
 		author: "shishir",
 		countDown: 5,
-		role: 2,
+		role: 1,
 		shortDescription: { en: "Operator system" },
 		longDescription: { en: "Add/remove operator (only owner), list operator (everyone)" },
 		category: "box chat",
