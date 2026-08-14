@@ -96,7 +96,7 @@ module.exports = {
         const threadPrefix = utils.getPrefix(event.threadID) || globalPrefix;
 
         const mediaURLs = [
-            "https://i.imgur.com/RomFWxP.mp4",
+            "https://i.imgur.com/HBMQIrH.mp4",
             "https://i.imgur.com/MlRUUe4.mp4",
         ];
 
