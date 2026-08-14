@@ -1,87 +1,105 @@
-const axios = require('axios');
+const axios = require("axios");
+const fs = require("fs-extra");
+const path = require("path");
+
+function detectPlatform(url) {
+  if (url.includes("tiktok.com")) return "𝙏𝙞𝙠𝙏𝙤𝙠";
+  if (url.includes("facebook.com") || url.includes("fb.watch")) return "𝙁𝙖𝙘𝙚𝙗𝙤𝙤𝙠";
+  if (url.includes("instagram.com")) return "𝙄𝙣𝙨𝙩𝙖𝙜𝙖𝙢";
+  if (url.includes("youtube.com") || url.includes("youtu.be")) return "𝙔𝙤𝙪𝙏𝙪𝙗𝙚";
+  if (url.includes("x.com") || url.includes("twitter.com")) return "𝙏𝙬𝙞𝙩𝙩𝙚𝙧 / 𝙓";
+  if (url.includes("pin.it") || url.includes("pinterest.com")) return "𝙋𝙞𝙣𝙩𝙚𝙧𝙚𝙨𝙩";
+  return "𝙐𝙣𝙠𝙣𝙤𝙬𝙣";
+}
+
+function extractVideo(data) {
+  if (!data) return null;
+  const r = data.result || {};
+  return (
+    r.high_quality ||
+    r.video ||
+    r.url ||
+    data.high_quality ||
+    data.video ||
+    data.url ||
+    null
+  );
+}
+
+const SUPPORTED = [
+  "https://vt.tiktok.com", "https://www.tiktok.com/", "https://vm.tiktok.com",
+  "https://www.facebook.com/watch/", "https://www.facebook.com/reel/",
+  "https://www.facebook.com/share/v", "https://www.facebook.com/share/r",
+  "https://www.instagram.com/reel/", "https://youtu.be/", "https://youtube.com/",
+  "https://x.com/", "https://twitter.com/", "https://pin.it/", "https://www.pinterest.com/"
+];
 
 module.exports = {
   config: {
-    name: "alldl",
-    version: "12.0",
-    author: "xalman",
-    countDown: 3,
+    name: "autodl",
+    version: "6.5",
+    author: "Toshiro Editz",
     role: 0,
-    shortDescription: "Ultra Fast Multi-Source Downloader",
-    longDescription: "Download videos using Xalman API with flexible data parsing.",
-    category: "ANIME & MEDIA",
-    guide: "{pn} <link> or just send the link"
+    category: "media",
+    description: { en: "Auto download videos from multiple platforms" },
+    guide: { en: "[video link]" }
   },
 
-  onStart: async function ({ api, event, args, message }) {
-    const url = args[0];
-    if (!url) return message.reply("⚠️ Please provide a video link!");
-    return await this.handleDownload(url, api, event, message);
-  },
+  onStart: async function () {},
 
-  onChat: async function ({ api, event, message }) {
-    const { body, senderID } = event;
-    if (!body || senderID === api.getCurrentUserID()) return;
+  onChat: async function ({ api, event }) {
+    const text = event.body || "";
+    if (!text.startsWith("http")) return;
+    if (!SUPPORTED.some(link => text.startsWith(link))) return;
 
-    const linkRegEx = /(https?:\/\/[^\s]+)/g;
-    const match = body.match(linkRegEx);
-
-    if (match) {
-      const url = match[0];
-      const sites = ["tiktok.com", "facebook.com", "fb.watch", "instagram.com", "reels", "youtube.com", "youtu.be", "pinterest.com", "pin.it", "twitter.com", "x.com", "capcut.com"];
-      
-      if (sites.some(s => url.includes(s))) {
-        return await this.handleDownload(url, api, event, message);
-      }
-    }
-  },
-
-  handleDownload: async function (url, api, event, message) {
-    const { messageID } = event;
-    const start = Date.now();
+    api.setMessageReaction("🐤", event.messageID, event.threadID, (err) => {}, true);
+    const startTime = Date.now();
 
     try {
-      if (api.setMessageReaction) api.setMessageReaction("⌛", messageID, () => {}, true);
+      const cacheDir = path.join(__dirname, "cache");
+      await fs.ensureDir(cacheDir);
+      const filePath = path.join(cacheDir, `autodl_${Date.now()}.mp4`);
 
-      const res = await axios.get(`https://xalman-apis.vercel.app/api/alldl?url=${encodeURIComponent(url)}`);
-      const resData = res.data;
+      const res = await axios.get(
+        "https://toshiro-editz-api.vercel.app/downloader/alldl?url=" + encodeURIComponent(text),
+        { timeout: 30000 }
+      );
 
-      // Smart Parsing: Looks for URL and Title in multiple possible locations
-      const resultObj = resData.result || {};
-      const nestedData = resultObj.data || {};
+      const downloadUrl = extractVideo(res.data);
 
-      // Priority list for video URL and Title
-      const videoUrl = resultObj.url || resultObj.video_url || nestedData.url || nestedData.video_url || nestedData.hd;
-      const title = resultObj.title || nestedData.title || resultObj.description || "No Title";
-      const platform = resData.detected_platform || "Social Media";
+      if (!downloadUrl) {
+        api.setMessageReaction("❌", event.messageID, event.threadID, (err) => {}, true);
+        return api.sendMessage("❌ Video not found or unsupported link", event.threadID);
+      }
 
-      if (!videoUrl) throw new Error("Could not find a valid video URL.");
-      
-      const stream = await axios.get(videoUrl, { 
-        responseType: 'stream',
-        headers: { 'User-Agent': 'Mozilla/5.0' }
+      const response = await axios.get(downloadUrl, {
+        responseType: "arraybuffer",
+        timeout: 45000
       });
 
-      const time = ((Date.now() - start) / 1000).toFixed(2);
-      const xalmanBody = 
-        `『 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗𝗘𝗥 』\n` +
-        `━━━━━━━━━━━━━━━━━━\n` +
-        `📝 𝗧𝗶𝘁𝗹𝗲: ${title.slice(0, 60)}${title.length > 60 ? "..." : ""}\n` +
-        `🌐 𝗣𝗹𝗮𝘁𝗳𝗼𝗿𝗺: ${platform.toUpperCase()}\n` +
-        `⏱️ 𝗧𝗶𝗺𝗲: ${time}s\n` +
-        `👨‍💻 Dev: xalman\n` +
-        `━━━━━━━━━━━━━━━━━━`;
+      await fs.writeFile(filePath, Buffer.from(response.data));
 
-      await message.reply({
-        body: xalmanBody,
-        attachment: stream.data
-      });
+      const info = res.data.result || res.data;
+      const platform = detectPlatform(text);
+      const speed = ((Date.now() - startTime) / 1000).toFixed(2);
 
-      if (api.setMessageReaction) api.setMessageReaction("✅", messageID, () => {}, true);
+      const msg = {
+        body: `╭━〔 ✅ 𝐀𝐮𝐭𝐨 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 〕━╮\n┃ 📌 Title     : ${info.title || "No Title"}\n┃ 🌐 Platform  : ${platform}\n┃ 👤 Author    : ${info.author || "Unknown"}\n┃ ⚡ Speed     : ${speed}s\n╰━━━━━━━━━━━━━━━━╯\n⚡ Powered by —͟͞͞꧁•⊹٭𝙰𝚑𝚖𝚎𝚍 𝚂𝚑𝚒𝚜𝚑𝚒𝚛٭⊹•꧂ 모 ❄️`,
+        attachment: fs.createReadStream(filePath)
+      };
 
-    } catch (e) {
-      console.error("Download Error:", e.message);
-      if (api.setMessageReaction) api.setMessageReaction("❌", messageID, () => {}, true);
+      api.sendMessage(msg, event.threadID, (err, info) => {
+        if (err) {
+            console.error("Upload Error:", err);
+        }
+        api.setMessageReaction("✅", event.messageID, event.threadID, (err) => {}, true);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }, event.messageID);
+
+    } catch (err) {
+      console.error("AutoDL Error:", err);
+      api.setMessageReaction("❌", event.messageID, event.threadID, (err) => {}, true);
+      api.sendMessage(`❌ Error: ${err.message}`, event.threadID);
     }
   }
 };
