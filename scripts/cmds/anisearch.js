@@ -1,78 +1,70 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+async function getStreamFromURL(url) {
+  const response = await axios.get(url, { responseType: 'stream' });
+  return response.data;
+}
+
+async function fetchTikTokVideos(query) {
+  try {
+    const response = await axios.get(`https://lyric-search-neon.vercel.app/kshitiz?keyword=${query}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 module.exports = {
   config: {
     name: "anisearch",
-    aliases: ["ani"],
-    version: "0.0.7",
-    author: "Azadx69x",
-    role: 0,
-    category: "anime",
-    shortDescription: "Fetch Anisearch video",
-    longDescription: "Anisearch send a video",
-    cooldown: 5
+    aliases: [],
+    author: "Vex_kshitiz",
+    version: "1.0",
+    shortDescription: {
+      en: "get anime edit",
+    },
+    longDescription: {
+      en: "search for anime edits video",
+    },
+    category: "media",
+    guide: {
+      en: "{p}{n} [query]",
+    },
   },
+  onStart: async function ({ api, event, args }) {
+     api.setMessageReaction("✨", event.messageID, (err) => {}, true);
+    const query = args.join(' ');
+    const modifiedQuery = `${query} anime edit`;
 
-  onStart: async function({ message, args, api, event }) {
-    return this.run({ message, args, api, event });
-  },
+    const videos = await fetchTikTokVideos(modifiedQuery);
 
-  onChat: async function({ message, args, event, api }) {
-    const body = (event.body || "").toLowerCase();
-    if (!body.startsWith("anisearch")) return;
-    args = body.split(" ").slice(1);
-    return this.run({ message, args, api, event });
-  },
-
-  run: async function({ message, args, api, event }) {
-    try {
-      const character = args.join(" ").trim();
-      const apiUrl = `https://azadx69x-all-apis-top.vercel.app/api/anisearch?character=${encodeURIComponent(character)}`;
-    	
-      api.setMessageReaction("✨", event.messageID, event.threadID, () => {}, true);
-
-      const { data } = await axios.get(apiUrl);
-
-      if (!data?.success) {
-        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
-        return message.reply(`❌ ${data?.message || "No Anisearch videos found"}`);
-      }
-
-      let video = data.data;
-    	
-      if (video.duration && video.duration > 60) {
-        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
-        return message.reply("❌ Video is too long! Only short videos (< 1 min) are allowed.");
-      }
-    	
-      const videoUrl = video.video_url.replace(/^\[|\]$/g, "");
-      const filePath = path.join(__dirname, `anisearch_${Date.now()}.mp4`);
-      const writer = fs.createWriteStream(filePath);
-      const response = await axios({ url: videoUrl, method: "GET", responseType: "stream" });
-      response.data.pipe(writer);
-
-      writer.on("finish", async () => {
-        api.setMessageReaction("✅", event.messageID, event.threadID, () => {}, true);
-        
-        await message.reply({
-          body: "",
-          attachment: fs.createReadStream(filePath)
-        });
-
-        fs.unlinkSync(filePath);
-      });
-
-      writer.on("error", () => {
-        api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
-        return message.reply("❌ Error downloading video!");
-      });
-
-    } catch (err) {
-      console.error("❌ Anisearch CMD Error:", err.message);
-      api.setMessageReaction("❌", event.messageID, event.threadID, () => {}, true);
-      return message.reply("❌ Failed to fetch Anisearch video. Try again later.");
+    if (!videos || videos.length === 0) {
+      api.sendMessage({ body: `${query} not found.` }, event.threadID, event.messageID);
+      return;
     }
-  }
+
+    const selectedVideo = videos[Math.floor(Math.random() * videos.length)];
+    const videoUrl = selectedVideo.videoUrl;
+
+    if (!videoUrl) {
+      api.sendMessage({ body: 'Error: Video not found.' }, event.threadID, event.messageID);
+      return;
+    }
+
+    try {
+      const videoStream = await getStreamFromURL(videoUrl);
+
+      await api.sendMessage({
+        body: ``,
+        attachment: videoStream,
+      }, event.threadID, event.messageID);
+    } catch (error) {
+      console.error(error);
+      api.sendMessage({ body: 'An error occurred while processing the video.\nPlease try again later.' }, event.threadID, event.messageID);
+    }
+  },
 };
