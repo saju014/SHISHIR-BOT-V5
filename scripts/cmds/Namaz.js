@@ -248,7 +248,7 @@ module.exports = {
       message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       message += `📌 Note: Always verify with local mosque\n`;
       message += `🤲 May Allah accept our prayers (Ameen)\n`;
-      message += `⚡ Powered by: ${data.operator}\n`;
+      message += `⚡ Powered by:AHMED SHISHIR  {data.operator}\n`;
       message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
       
       // Delete waiting message and send final result
