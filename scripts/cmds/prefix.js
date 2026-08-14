@@ -96,8 +96,8 @@ module.exports = {
         const threadPrefix = utils.getPrefix(event.threadID) || globalPrefix;
 
         const mediaURLs = [
+            "https://i.imgur.com/RomFWxP.mp4",
             "https://i.imgur.com/MlRUUe4.mp4",
-            "https://i.imgur.com/ogXXXqs.mp4",
         ];
 
         const cacheDir  = path.join(__dirname, "cache");
