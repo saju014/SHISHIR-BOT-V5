@@ -3,7 +3,7 @@ module.exports = {
     name: "autoreact",
     version: "4.4.0",
     author: "Anik Islam Sadik (React fix by Fahad Islam)",
-    role: 0,
+    role: 2,
     category: "system",
     shortDescription: "Auto react (emoji + text)",
     longDescription: "Stable auto reaction without silent API fail"
