@@ -1,17 +1,19 @@
+const cooldowns = {};
+
 module.exports = {
   config: {
     name: "autosticker",
-    version: "5.0",
-    author: "xalman",
-    countDown: 3,
+    version: "5.4",
+    author: "Anik Islam Sadik",
+    countDown: 5,
     role: 0,
-    description: "Send a random sticker",
+    description: "Send a random sticker with cooldown. Reply-stickers are ignored.",
     category: "no prefix",
     guide: ""
   },
 
   onChat: async function ({ message, event, api }) {
-    const { attachments, body, senderID } = event;
+    const { attachments, body, senderID, messageReply } = event;
 
     const stickerList = [
       "997237917529747",
@@ -49,7 +51,59 @@ module.exports = {
       "2041012109459596",
       "2041011389459668",
       "2041011836126290",
-      "2041012406126233"
+      "2041012406126233",
+      "1653957535190146",
+      "1653961838523049",
+      "1653958728523360",
+      "1653959815189918",
+      "1653959108523322",
+      "840346298329699",
+      "840349011662761",
+      "840417168322612",
+      "840348028329526",
+      "840423774988618",
+      "840426104988385",
+      "840425448321784",
+      "840426894988306",
+      "840422048322124",
+      "840420931655569",
+      "615093244500568",
+      "615113087831917",
+      "615161037827122",
+      "61516142782708",
+      "615162151160344",
+      "615161654493727",
+      "615161251160434",
+      "114314139163194",
+      "392309937532985",
+      "392309890866323",
+      "392309637533015",
+      "392309990866313",
+      "392309957532983",
+      "392309834199662",
+      "392310044199641",
+      "392309624199683",
+      "1237285867479080",
+      "1350643753441450",
+      "1351316753374150",
+      "237317987087861",
+      "237318230421170",
+      "237320883754238",
+      "237320150420978",
+      "392309714199674",
+      "840419971655665",
+      "840344401663222",
+      "8298125910273126",
+      "8298107380274979",
+      "8298115103607540",
+      "392309800866332",
+      "1241305557077111",
+      "1237285187479148",
+      "456545143421931",
+      "456542403422205",
+      "1747088982269020",
+      "1747084572269461",
+      "840424478321881"
     ];
 
     if (senderID === api.getCurrentUserID()) return;
@@ -64,14 +118,17 @@ module.exports = {
       return message.reply(msg);
     }
 
-    if (!attachments?.some(a => a.type === "sticker")) return;
+    const isSticker = attachments?.some(a => a.type === "sticker");
+    if (!isSticker) return;
 
-    const randomSticker =
-      stickerList[Math.floor(Math.random() * stickerList.length)];
+    if (messageReply) return;
 
-    return message.reply({
-      sticker: randomSticker
-    });
+    const now = Date.now();
+    if (cooldowns[senderID] && now - cooldowns[senderID] < 5000) return;
+    cooldowns[senderID] = now;
+
+    const randomSticker = stickerList[Math.floor(Math.random() * stickerList.length)];
+    return message.reply({ sticker: randomSticker });
   },
 
   onStart: async function () {}
