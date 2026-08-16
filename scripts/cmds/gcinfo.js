@@ -65,7 +65,7 @@ module.exports = {
       }
 
       const replyText = `
-╭─❖
+╭─❖̳❚█══𝑺𝑯𝑰𝑺𝑯𝑰𝑹 -𝑨𝑰 -𝑩𝑶𝑻══█❚
 │ 📌 𝐆𝐑𝐎𝐔𝐏 𝐈𝐍𝐅𝐎
 ├─•
 │ 🏷 𝐍𝐚𝐦𝐞: ${groupName}
