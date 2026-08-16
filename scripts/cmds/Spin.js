@@ -9,7 +9,7 @@ module.exports = {
     name: "spin",
     version: "1.0",
     author: "xalman",
-    role: 0,
+    role: 2,
     countDown: 5,
     category: "GAMES",
     guide: {
