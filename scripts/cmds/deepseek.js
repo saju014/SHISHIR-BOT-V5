@@ -15,7 +15,7 @@ async function fetchAI(query, retries = 2) {
 }
 
 function buildMessage(query, answer) {
-  return `🤖 | 𝐃𝐞𝐞𝐩𝐒𝐞𝐞𝐤 𝐀𝐈
+  return `🤖 |❚█══𝑺𝑯𝑰𝑺𝑯𝑰𝑹 𝐃𝐞𝐞𝐩𝐒𝐞𝐞𝐤 𝐀𝐈
 
 🧠 𝐐𝐮𝐞𝐬𝐭𝐢𝐨𝐧:
 ${query}
