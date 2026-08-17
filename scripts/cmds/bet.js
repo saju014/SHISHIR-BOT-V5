@@ -60,7 +60,7 @@ module.exports = {
     }
 
     const bet = parseAmount(cleanInput, balance);
-    const max_limit = 500000000;
+    const max_limit = 20000000;
 
     if (bet === null || isNaN(bet) || bet < 1000) return message.reply(getLang("invalid_amount"));
     if (bet > max_limit) return message.reply(getLang("max_bet"));
