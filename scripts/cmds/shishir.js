@@ -1,11 +1,13 @@
 "use strict";
 
 const axios = require("axios");
+const fs = require("fs-extra");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "shishir",
-    version: "3.0.0",
+    version: "4.0.0",
     author: "〲shishirツ࿐ T.T o.O",
     role: 0,
     shortDescription: "Shishir Profile",
@@ -77,19 +79,29 @@ module.exports = {
        ✦ 𝐒𝐓𝐘𝐋𝐄 𝐁𝐘 𝐒𝐇𝐈𝐒𝐇𝐈𝐑 ✦
 `;
 
+    // 🎥 Imgur Video
     const videoUrl = "https://i.imgur.com/sbCunk3.mp4";
+
+    const cacheDir = path.join(__dirname, "cache");
+    const videoPath = path.join(cacheDir, "shishir.mp4");
 
     try {
 
+      await fs.ensureDir(cacheDir);
+
+      // Download video
       const response = await axios.get(videoUrl, {
-        responseType: "stream",
-        timeout: 30000
+        responseType: "arraybuffer",
+        timeout: 60000
       });
 
+      await fs.writeFile(videoPath, response.data);
+
+      // Send Info + Video
       api.sendMessage(
         {
           body: profileText,
-          attachment: response.data
+          attachment: fs.createReadStream(videoPath)
         },
         event.threadID,
         event.messageID
@@ -97,8 +109,9 @@ module.exports = {
 
     } catch (error) {
 
-      console.error("Video Error:", error);
+      console.error("VIDEO ERROR:", error);
 
+      // Video না গেলে শুধু Info
       api.sendMessage(
         profileText,
         event.threadID,
