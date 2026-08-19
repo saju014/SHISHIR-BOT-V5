@@ -1,7 +1,11 @@
+"use strict";
+
+const axios = require("axios");
+
 module.exports = {
   config: {
     name: "shishir",
-    version: "2.0.0",
+    version: "3.0.0",
     author: "〲shishirツ࿐ T.T o.O",
     role: 0,
     shortDescription: "Shishir Profile",
@@ -25,7 +29,7 @@ module.exports = {
 ║
 ╚════════════════════════════╝
 
-       ✦👑𝗼𝘄𝗻𝗲𝗿 𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 ✦
+       ✦👑 𝐎𝐖𝐍𝐄𝐑 𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 ✦
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃
@@ -73,20 +77,33 @@ module.exports = {
        ✦ 𝐒𝐓𝐘𝐋𝐄 𝐁𝐘 𝐒𝐇𝐈𝐒𝐇𝐈𝐑 ✦
 `;
 
-    api.sendMessage(profileText, event.threadID, event.messageID);
+    const videoUrl = "https://i.imgur.com/sbCunk3.mp4";
+
+    try {
+
+      const response = await axios.get(videoUrl, {
+        responseType: "stream",
+        timeout: 30000
+      });
+
+      api.sendMessage(
+        {
+          body: profileText,
+          attachment: response.data
+        },
+        event.threadID,
+        event.messageID
+      );
+
+    } catch (error) {
+
+      console.error("Video Error:", error);
+
+      api.sendMessage(
+        profileText,
+        event.threadID,
+        event.messageID
+      );
+    }
   }
 };
-const videoUrl = "https://i.imgur.com/sbCunk3.mp4";
-
-const response = await axios.get(videoUrl, {
-  responseType: "stream"
-});
-
-api.sendMessage(
-  {
-    body: profileText,
-    attachment: response.data
-  },
-  event.threadID,
-  event.messageID
-);
