@@ -1,47 +1,78 @@
 module.exports = {
   config: {
-      name: "shishir",
-          version: "1.0.4",
-              author: "〲shishirツ࿐ T.T　o.O",
-                  role: 0,
-                      shortDescription: "shishir Profile ",
-                          category: "Information",
-                              guide: {
-                                    en: "type shishir"
-                                        }
-                                          },
+    name: "shishir",
+    version: "2.0.0",
+    author: "〲shishirツ࿐ T.T o.O",
+    role: 0,
+    shortDescription: "Shishir Profile",
+    category: "Information",
+    guide: {
+      en: "type shishir"
+    }
+  },
+
   onStart: async function () {},
+
   onChat: async function ({ api, event }) {
-      const msg = event.body?.toLowerCase();
-          if (!msg || msg !== "shishir") return;
-    const profileText = 
-    `⏤͟͟͞͞𝐒𝐇𝐈𝐒𝐇𝐈𝐑   𝗜𝗡𝗙𝗢 ☺︎
- ⏤͟͟͞͞☺︎ ┏━━━━━━━━━━━━━━━
- ⏤͟͟͞͞𝐍𝐚𝐦𝐞 ➯ 👑𝐒𝐇𝐈𝐒𝐇𝐈𝐑   ⏤͟͟͞͞ ᜊ
- 
-⏤͟͟͞͞𝐍𝐢𝐜𝐤𝐧𝐚𝐦𝐞 ➯⏤͟͟͞͞ Your abbu 😜
 
-⏤͟͟͞͞𝐂𝐨𝐮𝐧𝐭𝐫𝐲 ➯⏤͟͟͞͞𝐁𝐚𝐧𝐠𝐥𝐚𝐝𝐞𝐬𝐡 🇧🇩
+    const msg = event.body?.toLowerCase();
+    if (!msg || msg !== "shishir") return;
 
-🏤⏤͟͟͞͞𝐇𝐨𝐦𝐞 ➯⏤͟͟͞͞𝙎𝙞𝙧𝙖𝙟𝙜𝙖𝙣𝙟   ☠️
+    const profileText = `
+╔════════════════════════════╗
+║
+║     𓆩 🖤 𓆪 𝐒𝐇𝐈𝐒𝐇𝐈𝐑 𝐈𝐍𝐅𝐎 𓆩 🤍 𓆪
+║
+╚════════════════════════════╝
 
-🏛️⏤͟͟͞͞𝐃𝐢𝐬𝐭𝐫𝐢𝐜𝐭 ➯⏤͟͟͞͞𝐑𝐚𝐣𝐬𝐡𝐚𝐡𝐢 💀
+       ✦👑𝗼𝘄𝗻𝗲𝗿 𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 ✦
 
-⛪⏤͟͟͞͞𝐄𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧 ➯ 𝐈𝐧𝐭𝐞𝐫 1st 𝐘𝐞𝐚𝐫 ✍︎❤️‍🩹
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃
+┃  👑 𝐍𝐚𝐦𝐞
+┃  ➤ 𝑺𝑯𝑰𝑺𝑯𝑰𝑹
+┃
+┃  😜 𝐍𝐢𝐜𝐤𝐧𝐚𝐦𝐞
+┃  ➤ 𝒀𝒐𝒖𝒓 𝒂𝒃𝒃𝒖
+┃
+┃  🇧🇩 𝐂𝐨𝐮𝐧𝐭𝐫𝐲
+┃  ➤ 𝑩𝒂𝒏𝒈𝒍𝒂𝒅𝒆𝒔𝒉
+┃
+┃  🏤 𝐇𝐨𝐦𝐞
+┃  ➤ 𝑺𝒊𝒓𝒂𝒋𝒈𝒂𝒏𝒋
+┃
+┃  🏛️ 𝐃𝐢𝐬𝐭𝐫𝐢𝐜𝐭
+┃  ➤ 𝑹𝒂𝒋𝒔𝒉𝒂𝒉𝒊
+┃
+┃  🎓 𝐄𝐝𝐮𝐜𝐚𝐭𝐢𝐨𝐧
+┃  ➤ 𝑰𝒏𝒕𝒆𝒓 𝟏𝒔𝒕 𝒀𝒆𝒂𝒓
+┃
+┃  🎂 𝐀𝐠𝐞
+┃  ➤ 𝟐𝟎
+┃
+┃  🕌 𝐑𝐞𝐥𝐢𝐠𝐢𝐨𝐧
+┃  ➤ 𝑰𝒔𝒍𝒂𝒎
+┃
+┃  ♡ 𝐑𝐞𝐥𝐚𝐭𝐢𝐨𝐧𝐬𝐡𝐢𝐩
+┃  ➤ 𝑺𝒊𝒏𝒈𝒍𝒆
+┃
+┃  🫂 𝐁𝐞𝐬𝐭 𝐅𝐧𝐝
+┃  ➤ 𝑨𝑺𝑬
+┃
+┃  🎨 𝐅𝐯𝐭 𝐂𝐨𝐥𝐨𝐮𝐫
+┃  ➤ 𝑾𝒉𝒊𝒕𝒆 😺🖤
+┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-⏤͟͟͞͞𝐀𝐠𝐞 ➯ 20  😊❤️‍🩹
+      ╭─────── 𓆩🖤𓆪 ───────╮
+          𝐒𝐇𝐈𝐒𝐇𝐈𝐑 𝐁𝐁𝐙
+      ╰─────── 𓆩🤍𓆪 ───────╯
 
-🕌⏤͟͟͞͞𝐑𝐞𝐥𝐢𝐠𝐢𝐨𝐧 ➯ 𝐈𝐬𝐥𝐚𝐦 ❤️♡♡
+          「 𝑶𝑾𝑵𝑬𝑹 ☻ 」
 
-⏤͟͟͞͞𝐑𝐞𝐥𝐚𝐭𝐢𝐨𝐧𝐬𝐡𝐢𝐩 ➯ 𝑺i𝐧𝐠𝐥𝐞 ‍♡
+       ✦ 𝐒𝐓𝐘𝐋𝐄 𝐁𝐘 𝐒𝐇𝐈𝐒𝐇𝐈𝐑 ✦
+`;
 
-⏤͟͟͞͞𝐁𝐞𝐬𝐭 𝐅𝐧𝐝➯ 𝑨𝑺𝑬 ,,🙃
-
-⏤͟͟͞͞𝐅𝐯𝐭 𝐂𝐨𝐥𝐨𝐮𝐫➯ ⏤͟͟͞͞White 😺🖤
-
-
- ⏤͟͟͞͞ ☻ 𝐒𝐇𝐈𝐒𝐇𝐈𝐑 𝗕𝗕𝗭 
- ⏤͟͟͞͞𝑂𝑊𝑁𝐸𝑅⏤☺︎ `;
     api.sendMessage(profileText, event.threadID, event.messageID);
-      }
-      };
+  }
+};
