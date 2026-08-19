@@ -76,3 +76,17 @@ module.exports = {
     api.sendMessage(profileText, event.threadID, event.messageID);
   }
 };
+const videoUrl = "https://i.imgur.com/sbCunk3.mp4";
+
+const response = await axios.get(videoUrl, {
+  responseType: "stream"
+});
+
+api.sendMessage(
+  {
+    body: profileText,
+    attachment: response.data
+  },
+  event.threadID,
+  event.messageID
+);
